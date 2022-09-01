@@ -88,7 +88,7 @@ def generate_launch_description():
                 'serial_port': '/dev/ttyUSB0',
                 'serial_baudrate': 115200,  # A1 / A2
                 'frame_id': LaunchConfiguration('frame_id'),
-                'inverted': True,
+                'inverted': False,
                 'angle_compensate': True,
             }],
         ),
