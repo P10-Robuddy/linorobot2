@@ -2,12 +2,14 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="base" params="length width height mass wheel_radius wheel_pos_z">
     <link name="base_footprint"/>
-    
+
     <link name="base_link">
       <visual>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="-0.15 0.1 0" rpy="0 0 -1.57"/>
         <geometry>
-          <box size="${length} ${width} ${height}"/>
+          <!--box size="${length} ${width} ${height}"/-->
+          <mesh scale="0.001 0.001 0.001" filename="file:///home/ubu/linorobot2_ws/src/linorobot2/linorobot2_description/meshes/layer_1_solidworks.STL"/>
+          
           <!-- <mesh filename="" scale="0.001 0.001 0.001"/> -->
         </geometry>
         <material name="yellow">

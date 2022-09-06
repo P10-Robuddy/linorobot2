@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="layer3">
+    <link name="layer_3">
+      <visual>
+        <origin xyz="-0.15 0.1 0" rpy="0 0 -1.57"/>
+        <geometry>
+          <mesh scale="0.001 0.001 0.001" filename="file:///home/ubu/linorobot2_ws/src/linorobot2/linorobot2_description/meshes/layer_3_solidworks.STL"/>
+        </geometry>
+        <material name="Grey"/>
+      </visual>
+    </link>
+
+
+    <joint name="layer2_to_layer3" type="fixed">
+      <parent link="base_footprint"/>
+      <child link="layer_3"/>
+      <origin xyz="0 0 ${(wheel_radius - wheel_pos_z)+0.14}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+</robot>
