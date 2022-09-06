@@ -24,7 +24,7 @@ from launch_ros.actions import Node
 MAP_NAME='home' #change to the name of your own map here
 
 def generate_launch_description():
-    depth_sensor = os.getenv('LINOROBOT2_DEPTH_SENSOR', '')
+    #depth_sensor = os.getenv('LINOROBOT2_DEPTH_SENSOR', '')
 
     nav2_launch_path = PathJoinSubstitution(
         [FindPackageShare('nav2_bringup'), 'launch', 'bringup_launch.py']
