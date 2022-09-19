@@ -93,6 +93,10 @@ def generate_launch_description():
             }],
         ),
 
+        Node(package='rplidar_ros2',
+             executable='view_rplidar_a3_launch.py',
+             name='rplidar_ros2'),
+        
         Node( 
             condition=LaunchConfigurationEquals('sensor', 'xv11'),
             name='xv_11_driver',
