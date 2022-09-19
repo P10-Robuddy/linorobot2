@@ -81,7 +81,7 @@ def generate_launch_description():
             }]
         ),
         
-        Node(
+        """Node(
             condition=LaunchConfigurationEquals('sensor', 'rplidar'),
             name='rplidar_composition',
             package='rplidar_ros',
@@ -95,7 +95,7 @@ def generate_launch_description():
                 'inverted': False,
                 'angle_compensate': True,
             }],
-        ),
+        ),""",
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(rplidar2_launch_path)
