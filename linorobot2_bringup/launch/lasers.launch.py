@@ -13,16 +13,20 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch_ros.actions import Node
-
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     ydlidar_config_path = PathJoinSubstitution(
         [FindPackageShare("linorobot2_bringup"), "config", "ydlidar.yaml"]
+    )
+    
+    rplidar2_launch_path = PathJoinSubstitution(
+        [FindPackageShare('rplidar_ros2'), 'launch', 'view_rplidar_a3_launch.py']
     )
 
     return LaunchDescription([
@@ -92,10 +96,10 @@ def generate_launch_description():
                 'angle_compensate': True,
             }],
         ),
-
-        Node(package='rplidar_ros2',
-             executable='view_rplidar_a3_launch.py',
-             name='rplidar_ros2'),
+        
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(rplidar2_launch_path)
+        ),
         
         Node( 
             condition=LaunchConfigurationEquals('sensor', 'xv11'),
