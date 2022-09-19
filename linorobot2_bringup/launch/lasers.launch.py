@@ -81,21 +81,6 @@ def generate_launch_description():
             }]
         ),
         
-        """Node(
-            condition=LaunchConfigurationEquals('sensor', 'rplidar'),
-            name='rplidar_composition',
-            package='rplidar_ros',
-            executable='rplidar_composition',
-            output='screen',
-            remappings=[('scan', LaunchConfiguration('topic_name'))],
-            parameters=[{
-                'serial_port': '/dev/ttyUSB0',
-                'serial_baudrate': 256000,  # A1 / A2
-                'frame_id': LaunchConfiguration('frame_id'),
-                'inverted': False,
-                'angle_compensate': True,
-            }],
-        ),""",
         
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(rplidar2_launch_path)
