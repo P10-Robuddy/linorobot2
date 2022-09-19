@@ -82,7 +82,7 @@ def generate_launch_description():
             condition=LaunchConfigurationEquals('sensor', 'rplidar'),
             name='rplidar_composition',
             package='rplidar_ros2',
-            executable='view_rplidar_a3_launch.py',
+            executable='rplidar_scan_publisher',
             output='screen',
             remappings=[('scan', LaunchConfiguration('topic_name'))],
             parameters=[{
