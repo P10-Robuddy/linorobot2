@@ -27,8 +27,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        GroupAction([
-            PushRosNamespace('polybot04'),
             Node(
                 package='joy_linux',
                 executable='joy_linux_node',
@@ -43,5 +41,4 @@ def generate_launch_description():
                 output='screen',
                 parameters=[joy_config_path]
             )
-        ])
     ])
