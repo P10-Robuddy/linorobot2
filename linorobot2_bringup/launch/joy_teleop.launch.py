@@ -14,11 +14,11 @@
 
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 
 
 def generate_launch_description():
@@ -27,18 +27,21 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        Node(
-            package='joy_linux',
-            executable='joy_linux_node',
-            name='joy_linux_node',
-            output='screen',
-        ),
+        GroupAction([
+            PushRosNamespace('polybot04'),
+            Node(
+                package='joy_linux',
+                executable='joy_linux_node',
+                name='joy_linux_node',
+                output='screen',
+            ),
 
-        Node(
-            package='teleop_twist_joy',
-            executable='teleop_node',
-            name='teleop_twist_joy_node',
-            output='screen',
-            parameters=[joy_config_path]
-        )
+            Node(
+                package='teleop_twist_joy',
+                executable='teleop_node',
+                name='teleop_twist_joy_node',
+                output='screen',
+                parameters=[joy_config_path]
+            )
+        ])
     ])
