@@ -76,10 +76,6 @@ def generate_launch_description():
             ),
 
             IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(description_launch_path)
-            ),
-
-            IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(sensors_launch_path),
             ),
 
@@ -88,4 +84,8 @@ def generate_launch_description():
                 condition=IfCondition(LaunchConfiguration("joy")),
             )
         ])
+        ,
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(description_launch_path)
+        )
     ])
