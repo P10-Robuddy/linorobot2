@@ -72,7 +72,7 @@ def generate_launch_description():
                 parameters=[
                     ekf_config_path
                 ],
-                remappings=[("polybot04/odometry/filtered", "odom")]
+                remappings=[("polybot04/odometry/filtered", "polybot/odom")]
             ),
 
             IncludeLaunchDescription(
