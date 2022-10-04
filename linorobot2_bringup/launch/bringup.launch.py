@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from tokenize import group
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node, PushRosNamespace
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch.conditions import IfCondition
 
 
 def generate_launch_description():
-    
     sensors_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'launch', 'sensors.launch.py']
     )
@@ -41,51 +39,47 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        GroupAction([
-            PushRosNamespace('polybot04'),
-            
-            DeclareLaunchArgument(
-                name='base_serial_port', 
-                default_value='/dev/ttyACM0',
-                description='Linorobot Base Serial Port'
-            ),
+        DeclareLaunchArgument(
+            name='base_serial_port', 
+            default_value='/dev/ttyACM0',
+            description='Linorobot Base Serial Port'
+        ),
 
-            DeclareLaunchArgument(
-                    name='joy', 
-                    default_value='false',
-                    description='Use Joystick'
-                ),
+       DeclareLaunchArgument(
+            name='joy', 
+            default_value='false',
+            description='Use Joystick'
+        ),
 
-            Node(
-                package='micro_ros_agent',
-                executable='micro_ros_agent',
-                name='micro_ros_agent',
-                output='screen',
-                arguments=['serial', '--dev', LaunchConfiguration("base_serial_port")]
-            ),
+        Node(
+            package='micro_ros_agent',
+            executable='micro_ros_agent',
+            name='micro_ros_agent',
+            output='screen',
+            arguments=['serial', '--dev', LaunchConfiguration("base_serial_port")]
+        ),
 
-            Node(
-                package='robot_localization',
-                executable='ekf_node',
-                name='ekf_filter_node',
-                output='screen',
-                parameters=[
-                    ekf_config_path
-                ],
-                remappings=[("polybot04/odometry/filtered", "polybot/odom")]
-            ),
+        Node(
+            package='robot_localization',
+            executable='ekf_node',
+            name='ekf_filter_node',
+            output='screen',
+            parameters=[
+                ekf_config_path
+            ],
+            remappings=[("odometry/filtered", "odom")]
+        ),
 
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(sensors_launch_path),
-            ),
-
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(joy_launch_path),
-                condition=IfCondition(LaunchConfiguration("joy")),
-            )
-        ])
-        ,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(description_launch_path)
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(sensors_launch_path),
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(joy_launch_path),
+            condition=IfCondition(LaunchConfiguration("joy")),
         )
     ])
