@@ -26,7 +26,7 @@ def generate_launch_description():
     )
     
     rplidar2_launch_path = PathJoinSubstitution(
-        [FindPackageShare('rplidar_ros'), 'launch', 'rplidar.launch.py']
+        [FindPackageShare('rplidar_ros'), 'launch', 'view_rplidar.launch.py']
     )
 
     return LaunchDescription([
