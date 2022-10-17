@@ -59,10 +59,13 @@ function install_xv11 {
 }
 
 function install_rplidar {
-    sudo apt install -y ros-$ROS_DISTRO-rplidar-ros
-    cd /tmp
-    wget https://raw.githubusercontent.com/allenh1/rplidar_ros/ros2/scripts/rplidar.rules
+    cd $WORKSPACE
+    git clone -b ros2 https://github.com/lopenguin/rplidar_ros2.git src/rplidar_ros2
+    #sudo apt install -y ros-$ROS_DISTRO-rplidar-ros
+    #cd /tmp
+    wget https://raw.githubusercontent.com/lopenguin/rplidar_ros/ros2/scripts/rplidar.rules
     sudo cp rplidar.rules /etc/udev/rules.d/
+    colcon build --symlink-install
 }
 
 function install_ldlidar {
