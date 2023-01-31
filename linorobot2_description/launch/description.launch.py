@@ -23,6 +23,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     robot_base = os.getenv('LINOROBOT2_BASE')
+    robot_ns = os.getenv('ROBOT_NAMESPACE')
 
     urdf_path = PathJoinSubstitution(
         [FindPackageShare("linorobot2_description"), "urdf/robots", f"{robot_base}.urdf.xacro"]
@@ -75,7 +76,7 @@ def generate_launch_description():
             parameters=[
                 {
                     'use_sim_time': LaunchConfiguration('use_sim_time'),
-                    'robot_description': Command(['xacro ', LaunchConfiguration('urdf')])
+                    'robot_description': Command(['xacro ', LaunchConfiguration('urdf'), ' prefix:='+robot_ns])
                 }
             ]
         ),

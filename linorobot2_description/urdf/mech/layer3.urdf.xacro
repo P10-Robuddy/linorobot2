@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="layer3">
+  <xacro:macro name="layer3" params="namespace">
     <link name="layer_3">
       <visual>
         <origin xyz="-0.15 0.1 0" rpy="0 0 -1.57"/>
@@ -13,7 +13,7 @@
 
 
     <joint name="layer2_to_layer3" type="fixed">
-      <parent link="base_footprint"/>
+      <parent link="${namespace+'_footprint'}"/>
       <child link="layer_3"/>
       <origin xyz="0 0 ${(wheel_radius - wheel_pos_z)+0.14}" rpy="0 0 0"/>
     </joint>

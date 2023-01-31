@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
@@ -22,6 +22,9 @@ from launch.conditions import IfCondition
 
 
 def generate_launch_description():
+
+    robot_ns = os.getenv('ROBOT_NAMESPACE')
+
     sensors_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'launch', 'sensors.launch.py']
     )
@@ -65,7 +68,13 @@ def generate_launch_description():
             name='ekf_filter_node',
             output='screen',
             parameters=[
-                ekf_config_path
+                ekf_config_path,
+                {
+                'map_frame': 'map',           
+                'odom_frame': robot_ns + '/odom',            
+                'base_link_frame': robot_ns + '_footprint',
+                'world_frame': robot_ns + '/odom', 
+                }
             ],
             remappings=[("odometry/filtered", "odom")]
         ),

@@ -19,11 +19,16 @@
     mass="${base_mass}"
     wheel_radius="${wheel_radius}"
     wheel_pos_z="${wheel_pos_z}"
+    namespace="$(arg prefix)"
 />
 
-  <xacro:layer2/>
+  <xacro:layer2
+    namespace="$(arg prefix)"
+  />
 
-  <xacro:layer3/>
+  <xacro:layer3
+    namespace="$(arg prefix)"
+  />
 
   <xacro:wheel 
     side="left"
