@@ -38,6 +38,7 @@
     pos_y="${wheel_pos_y}" 
     pos_z="${wheel_pos_z}" 
     mass="${wheel_mass}"
+    namespace="$(arg prefix)"
   />
 
   <xacro:wheel 
@@ -48,6 +49,7 @@
     pos_y="${-wheel_pos_y}" 
     pos_z="${wheel_pos_z}" 
     mass="${wheel_mass}"
+    namespace="$(arg prefix)"
   />
 
   <xacro:if value="${front_caster_wheel}">
@@ -56,7 +58,8 @@
       mass="0.01"
       base_length="${base_length}" 
       wheel_radius="${wheel_radius}" 
-      wheel_pos_z="${wheel_pos_z}" 
+      wheel_pos_z="${wheel_pos_z}"
+      namespace="$(arg prefix)"
     />
   </xacro:if>
 
@@ -66,19 +69,24 @@
       mass="0.01"
       base_length="${base_length}" 
       wheel_radius="${wheel_radius}" 
-      wheel_pos_z="${wheel_pos_z}" 
+      wheel_pos_z="${wheel_pos_z}"
+      namespace="$(arg prefix)"
     />
   </xacro:if>
 
-  <xacro:imu/>
+  <xacro:imu
+    namespace="$(arg prefix)"
+  />
 
-  <xacro:generic_laser>
-    <xacro:insert_block name="laser_pose" />
+  <xacro:generic_laser
+    namespace="$(arg prefix)" 
+    >
+    <xacro:insert_block name="laser_pose" />origin
   </xacro:generic_laser>
   
-  <xacro:depth_sensor>
+  <!-- <xacro:depth_sensor>
     <xacro:insert_block name="depth_sensor_pose" />
-  </xacro:depth_sensor>
+  </xacro:depth_sensor> -->
 
   <xacro:diff_drive_controller
     wheel_separation="${wheel_pos_y * 2}"

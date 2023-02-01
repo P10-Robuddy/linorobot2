@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="caster_wheel" params="side mass base_length wheel_radius wheel_pos_z">
+  <xacro:macro name="caster_wheel" params="side mass base_length wheel_radius wheel_pos_z namespace">
     <xacro:property name="caster_wheel_radius" value="${(wheel_radius - wheel_pos_z) / 2}" />
     <xacro:if value="${side == 'front'}">
         <xacro:property name="caster_wheel_x" value="${(base_length / 2) - caster_wheel_radius}" />
@@ -10,7 +10,7 @@
         <xacro:property name="caster_wheel_x" value="${-(base_length / 2) + caster_wheel_radius}" />
     </xacro:if>
     
-    <link name="${side}_caster_wheel_link">
+    <link name="${namespace}_${side}_caster_wheel_link">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -37,14 +37,14 @@
       </inertial>
     </link>
 
-    <gazebo reference="${side}_caster_wheel_link">
+    <gazebo reference="${namespace}_${side}_caster_wheel_link">
         <mu1>0.01</mu1>
         <mu2>0.01</mu2>
     </gazebo>
 
-    <joint name="${side}_caster_wheel_joint" type="fixed">
-      <parent link="base_link"/>
-      <child link="${side}_caster_wheel_link"/>
+    <joint name="${namespace}_${side}_caster_wheel_joint" type="fixed">
+      <parent link="${namespace}_base_link"/>
+      <child link="${namespace}_${side}_caster_wheel_link"/>
       <origin xyz="${caster_wheel_x} 0 -${caster_wheel_radius}" rpy="0 0 0"/>
     </joint>
   </xacro:macro>

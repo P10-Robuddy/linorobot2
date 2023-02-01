@@ -1,6 +1,6 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="M_PI" value="3.1415926535897931" />
-  <xacro:macro name="laser" params="*origin update_rate ray_count min_angle max_angle min_range max_range frame_id topic_name">
+  <xacro:macro name="laser" params="*origin update_rate ray_count min_angle max_angle min_range max_range frame_id topic_name namespace">
     <link name="${frame_id}">
       <visual>
         <origin xyz="0 0 0.095" rpy="0 0 0"/>
@@ -39,7 +39,7 @@
     </gazebo>
 
     <joint name="${frame_id}_to_base_link" type="fixed">
-      <parent link="base_link"/>
+      <parent link="${namespace}_base_link"/>
       <child link="${frame_id}"/>
       <xacro:insert_block name="origin" />
     </joint>
