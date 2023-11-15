@@ -21,6 +21,10 @@ This package requires ros-humble. If you haven't installed ROS2 yet, you can see
 
 ### 0. ROS2 Humble
 
+First of all, remove unattended-upgrades
+
+    sudo apt purge -y unattended-upgrades
+
 #### 0.1 Install ROS2 Humble
 
 First ensure that the Ubuntu Universe repository is enabled.
