@@ -188,8 +188,12 @@ All commands below are to be run on the robot computer unless you're running a s
 
 #### 1.1a Using a real robot
 
+It might be a good idea to source the install setup again
+
     cd $HOME/linorobot_ws
     source install/setup.bash
+
+Now we can run bringup:
 
     ros2 launch linorobot2_bringup bringup.launch.py
 
