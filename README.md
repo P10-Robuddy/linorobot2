@@ -13,7 +13,7 @@ Assuming you're using one of the tested sensors, linorobot2 automatically launch
 The image below summarizes the topics available after running **bringup.launch.py**.
 ![linorobot2_microcontroller](docs/microcontroller_architecture.png)
 
-An in-depth tutorial on how to build the robot is available in [linorobot2_hardware](https://github.com/linorobot/linorobot2_hardware).
+An in-depth tutorial on how to build the robot is available in [linorobot2_hardware](https://github.com/P9-Robuddy/linorobot2_hardware).
 
 ## Installation
 
