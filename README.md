@@ -64,7 +64,12 @@ Now we configure the ROS2 environment. Add this to your _bashrc_ file
 
 Also set a ROS_DOMAIN. Here it is set to 60.
 
-    echo "export ROS_DOMAIN_ID=60 >> ~/.bashrc
+    echo "export ROS_DOMAIN_ID=60" >> ~/.bashrc
+    source ~/.bashrc
+
+Also set a ROBOT_NAMESPACE. Here it is set to Robuddy1
+
+    echo "export ROBOT_NAMESPACE=Robuddy1" >> ~/.bashrc
     source ~/.bashrc
 
 ### 1. Robot Computer - linorobot2 Package
@@ -76,9 +81,9 @@ Make a workspace:
 
 #### 1.1 Laser_sensor - rplidar
 
-    sudo apt install -y ros-$ROS_DISTRO-rplidar-ros
-    cd /tmp
-    wget https://raw.githubusercontent.com/allenh1/rplidar_ros/ros2/scripts/rplidar.rules
+    cd $HOME/linorobot2_ws
+    git clone -b ros2 https://github.com/lopenguin/rplidar_ros2.git src/rplidar_ros2
+    wget https://raw.githubusercontent.com/lopenguin/rplidar_ros2/master/scripts/rplidar.rules
     sudo cp rplidar.rules /etc/udev/rules.d/
 
 #### 1.2 Depth_sensor -realsense
@@ -92,6 +97,9 @@ Make a workspace:
     sudo apt install -y python3-vcstool build-essential
     sudo apt update -y && rosdep update
     rosdep install --from-path src --ignore-src -y
+
+Now build everything:
+
     colcon build
     source install/setup.bash
 
@@ -122,7 +130,7 @@ Now install the linorobot2 package:
 
 #### 1.7 Finishing up
 
-Add the following parameters to your _bashrc_ file:
+Add the following parameters to your _bashrc_ file as seen here:
 
     echo "export LINOROBOT2_BASE=2wd" >> ~/.bashrc
     echo "export LINOROBOT2_DEPTH_SENSOR=realsense" >> ~/.bashrc
@@ -135,11 +143,19 @@ This step is only required if you plan to use Gazebo later. This comes in handy 
 
 #### 2.1 Install linorobot2 Package
 
+Create a workspace on the host machine
+
+    cd $HOME
+    mkdir linorobot_ws
+
 Install linorobot2 package on the host machine:
 
-    cd <host_machine_ws>
+    cd linorobot_ws
     git clone -b $ROS_DISTRO https://github.com/P9-Robuddy/linorobot2 src/linorobot2
     rosdep update && rosdep install --from-path src --ignore-src -y --skip-keys microxrcedds_agent --skip-keys micro_ros_agent
+
+Now build it:
+
     colcon build
     source install/setup.bash
 
@@ -154,7 +170,7 @@ Set LINOROBOT2_BASE env variable to the type of robot base used. Available env v
 
 You can skip the next step (Host Machine - RVIZ Configurations) since this package already contains the same RVIZ configurations to visualize the robot.
 
-### 3. Host Machine - RVIZ Configurations
+### 3. Host Machine - RVIZ Configurations (Optional)
 
 Install [linorobot2_viz](https://github.com/linorobot/linorobot2_viz) package to visualize the robot remotely specifically when creating a map or initializing/sending goal poses to the robot. The package has been separated to minimize the installation required if you're not using the simulation tools on the host machine.
 
@@ -164,56 +180,6 @@ Install [linorobot2_viz](https://github.com/linorobot/linorobot2_viz) package to
     colcon build
     source install/setup.bash
 
-## Hardware and Robot Firmware
-
-All the hardware documentation and robot microcontroller's firmware can be found [here](https://github.com/linorobot/linorobot2_hardware).
-
-## URDF
-
-### 1. Custom URDF - Define robot properties
-
-[linorobot2_description](./linorobot2_description) package has parameterized xacro files that can help you kickstart writing the robot's URDF. Open <robot_type>.properties.urdf.xacro in [linorobot2_description/urdf](./linorobot2_description/urdf) directory and change the values according to the robot's specification/dimensions. All pose definitions must be measured from the `base_link` (center of base) and wheel positions (ie `wheel_pos_x`) are referring to wheel 1.
-
-For custom URDFs, you can change the `urdf_path` in [description.launch.py](./linorobot2_description/launch/description.launch.py) found in linorobot2_description/launch directory.
-
-Robot Orientation:
-
---------------FRONT--------------
-
-WHEEL1  WHEEL2  (2WD/4WD)
-
-WHEEL3  WHEEL4  (4WD)
-
---------------BACK--------------
-
-Build the robot computer's workspace to load the new URDF:
-
-    cd <robot_computer_ws>
-    colcon build
-
-The same changes must be made on the host machine's <robot_type>.properties.urdf.xacro if you're simulating the robot in Gazebo. Remember to also build the host machine's workspace after editing the xacro file.
-
-    cd <host_machine_ws>
-    colcon build
-
-### 2. Visualize the newly created URDF
-
-#### 2.1 Publish the URDF from the robot computer
-
-    ros2 launch linorobot2_description description.launch.py
-
-Optional parameters for simulation on host machine:
-
-- **rviz** - Set to true to visualize the robot in rviz2 and only if you're configuring the URDF from the host machine. For example:
-
-        ros2 launch linorobot2_description description.launch.py rviz:=true
-
-#### 2.2 Visualize the robot from the host machine
-
-The `rviz` argument on description.launch.py won't work on headless setup but you can visualize the robot remotely from the host machine:
-
-    ros2 launch linorobot2_viz robot_model.launch.py
-
 ## Quickstart
 
 All commands below are to be run on the robot computer unless you're running a simulation or rviz2 to visualize the robot remotely from the host machine. SLAM and Navigation launch files are the same for both real and simulated robots in Gazebo.
@@ -221,6 +187,9 @@ All commands below are to be run on the robot computer unless you're running a s
 ### 1. Booting up the robot
 
 #### 1.1a Using a real robot
+
+    cd $HOME/linorobot_ws
+    source install/setup.bash
 
     ros2 launch linorobot2_bringup bringup.launch.py
 
@@ -230,7 +199,7 @@ Optional parameters:
 
     ros2 launch linorobot2_bringup bringup.launch.py base_serial_port:=/dev/ttyACM1
 
-- **joy** - Set to true to run the joystick node in the background. (Tested on Logitech F710).
+- **joy** - Set to true to run the joystick node in the background.
 
 Always wait for the microROS agent to be connected before running any application (ie. creating a map or autonomous navigation). Once connected, the agent will print:
 
