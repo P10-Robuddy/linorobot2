@@ -145,6 +145,7 @@ Add the following parameters to your _bashrc_ file as seen here:
 
     echo "export LINOROBOT2_BASE=2wd" >> ~/.bashrc
     echo "export LINOROBOT2_LASER_SENSOR=rplidar" >> ~/.bashrc
+    echo "export LINOROBOT_DEPTH_SENSOR=realsense" >> ~/.bashrc
     source ~/.bashrc
 
 ### 2. Host Machine / Development Computer - Gazebo Simulation (Optional)
