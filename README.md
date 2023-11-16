@@ -156,11 +156,11 @@ This step is only required if you plan to use Gazebo later. This comes in handy 
 Create a workspace on the host machine
 
     cd $HOME
-    mkdir linorobot_ws
+    mkdir linorobot2_ws
 
 Install linorobot2 package on the host machine:
 
-    cd linorobot_ws
+    cd linorobot2_ws
     git clone -b $ROS_DISTRO https://github.com/P9-Robuddy/linorobot2 src/linorobot2
     rosdep update && rosdep install --from-path src --ignore-src -y --skip-keys microxrcedds_agent --skip-keys micro_ros_agent
 
@@ -200,7 +200,7 @@ All commands below are to be run on the robot computer unless you're running a s
 
 It might be a good idea to source the install setup again
 
-    cd $HOME/linorobot_ws
+    cd $HOME/linorobot2_ws
     source install/setup.bash
 
 Now we can run bringup:
@@ -303,7 +303,7 @@ More info [here](https://navigation.ros.org/tutorials/docs/navigation2_with_slam
 
 Open linorobot2/linorobot2_navigation/launch/navigation.launch.py and change _MAP_NAME_ to the name of the newly created map. Build the robot computer's workspace once done:
 
-    cd <robot_computer_ws>
+    cd $HOME/linorobot2_ws
     colcon build
 
 Alternatively, `map` argument can be used when launching Nav2 (next step) to dynamically load map files. For example:
