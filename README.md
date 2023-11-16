@@ -93,7 +93,7 @@ Download dependencies:
     wget https://raw.githubusercontent.com/lopenguin/rplidar_ros2/master/scripts/rplidar.rules
     sudo cp rplidar.rules /etc/udev/rules.d/
 
-#### 1.2 Depth_sensor -realsense
+#### 1.2 Depth_sensor - realsense
 
 This is not needed, but some things rely on the driver being installed for now. Will remove later.
 
