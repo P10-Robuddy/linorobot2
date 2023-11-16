@@ -62,14 +62,16 @@ Now we configure the ROS2 environment. Add this to your _bashrc_ file
     echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
     echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh" >> ~/.bashrc
 
-Also set a ROS_DOMAIN. Here it is set to 60.
+Also set a ROS_DOMAIN variable. Here it is set to 60.
 
     echo "export ROS_DOMAIN_ID=60" >> ~/.bashrc
-    source ~/.bashrc
 
-Also set a ROBOT_NAMESPACE. Here it is set to Robuddy1
+Also set a ROBOT_NAMESPACE variable. Here it is set to polybot1.
 
-    echo "export ROBOT_NAMESPACE=Robuddy1" >> ~/.bashrc
+    echo "export ROBOT_NAMESPACE=polybot1" >> ~/.bashrc
+
+Now source your _bashrc_ for the changes to take effect:
+
     source ~/.bashrc
 
 ### 1. Robot Computer - linorobot2 Package
@@ -78,6 +80,11 @@ Make a workspace:
 
     cd $HOME
     mkdir linorobot2_ws
+
+Download dependencies:
+
+    sudo apt install -y python3-vcstool
+    sudo apt install -y build-essential
 
 #### 1.1 Laser_sensor - rplidar
 
@@ -88,14 +95,17 @@ Make a workspace:
 
 #### 1.2 Depth_sensor -realsense
 
+This is not needed, but some things rely on the driver being installed for now. Will remove later.
+
     sudo apt install -y ros-$ROS_DISTRO-realsense2-camera
 
 #### 1.3 micro-ROS
 
     cd $HOME/linorobot2_ws
     git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup src/micro_ros_setup
-    sudo apt install -y python3-vcstool build-essential
+    
     sudo apt update -y && rosdep update
+    
     rosdep install --from-path src --ignore-src -y
 
 Now build everything:
@@ -125,6 +135,7 @@ Now install the linorobot2 package:
 
     cd $HOME/linorobot2_ws
     rosdep update && rosdep install --from-path src --ignore-src -y --skip-keys microxrcedds_agent
+    
     colcon build
     source install/setup.bash
 
@@ -133,7 +144,6 @@ Now install the linorobot2 package:
 Add the following parameters to your _bashrc_ file as seen here:
 
     echo "export LINOROBOT2_BASE=2wd" >> ~/.bashrc
-    echo "export LINOROBOT2_DEPTH_SENSOR=realsense" >> ~/.bashrc
     echo "export LINOROBOT2_LASER_SENSOR=rplidar" >> ~/.bashrc
     source ~/.bashrc
 
