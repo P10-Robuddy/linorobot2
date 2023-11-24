@@ -124,7 +124,7 @@ You can ignore 1 package had stderr output: microxrcedds_agent after building yo
 #### 1.5 Install linorobot2 package
 
     cd $HOME/linorobot2_ws
-    git clone -b $ROS_DISTRO https://github.com/P9-Robuddy/linorobot2 src/linorobot2
+    git clone -b $ROS_DISTRO https://github.com/linorobot/linorobot2 src/linorobot2
 
 If you're installing this on the robot's computer or you don't need to run Gazebo at all, you can skip linorobot2_gazebo package by creating a COLCON_IGNORE file:
 
@@ -162,7 +162,7 @@ Create a workspace on the host machine
 Install linorobot2 package on the host machine:
 
     cd linorobot2_ws
-    git clone -b $ROS_DISTRO https://github.com/P9-Robuddy/linorobot2 src/linorobot2
+    git clone -b $ROS_DISTRO https://github.com/linorobot/linorobot2 src/linorobot2
     rosdep update && rosdep install --from-path src --ignore-src -y --skip-keys microxrcedds_agent --skip-keys micro_ros_agent
 
 Now build it:
