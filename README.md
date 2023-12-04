@@ -60,7 +60,7 @@ Source the setup script
 Now we configure the ROS2 environment. Add this to your _bashrc_ file
 
     echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh" >> ~/.bashrc
+    echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
 
 Also set a ROS_DOMAIN variable. Here it is set to 60.
 
@@ -103,6 +103,10 @@ This is not needed, but some things rely on the driver being installed for now. 
 
     cd $HOME/linorobot2_ws
     git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup src/micro_ros_setup
+
+Now initialise ```rosdep```
+
+    rosdep init
     
     sudo apt update -y && rosdep update
     
