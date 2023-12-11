@@ -106,7 +106,7 @@ This is not needed, but some things rely on the driver being installed for now. 
 
 Now initialise ```rosdep```
 
-    rosdep init
+    sudo rosdep init
     
     sudo apt update -y && rosdep update
     
