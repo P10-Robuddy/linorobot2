@@ -62,13 +62,13 @@ Now we configure the ROS2 environment. Add this to your _bashrc_ file
     echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
     echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
 
-Also set a ROS_DOMAIN variable. Here it is set to 60.
+Also set a ROS_DOMAIN variable. Here it is set to 60. If not set, then it defaults to 0.
 
     echo "export ROS_DOMAIN_ID=60" >> ~/.bashrc
 
-Also set a ROBOT_NAMESPACE variable. Here it is set to polybot1.
+Also set a ROBOT_NAMESPACE variable. Here it is set to polybot01. If not set, then it defaults to "polybot01"
 
-    echo "export ROBOT_NAMESPACE=polybot1" >> ~/.bashrc
+    echo "export ROBOT_NAMESPACE=polybot01" >> ~/.bashrc
 
 Now source your _bashrc_ for the changes to take effect:
 
@@ -90,16 +90,11 @@ Download dependencies:
 
     cd $HOME/linorobot2_ws
     git clone -b ros2 https://github.com/lopenguin/rplidar_ros2.git src/rplidar_ros2
-    wget https://raw.githubusercontent.com/lopenguin/rplidar_ros2/master/scripts/rplidar.rules
+    wget https://raw.githubusercontent.com/lopenguin/rplidar_ros2/ros2/scripts/rplidar.rules
     sudo cp rplidar.rules /etc/udev/rules.d/
-
-#### 1.2 Depth_sensor - realsense
-
-This is not needed, but some things rely on the driver being installed for now. Will remove later.
-
-    sudo apt install -y ros-$ROS_DISTRO-realsense2-camera
-
-#### 1.3 micro-ROS
+    colcon build
+    
+#### 1.2 micro-ROS
 
     cd $HOME/linorobot2_ws
     git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup src/micro_ros_setup
@@ -117,7 +112,7 @@ Now build everything:
     colcon build
     source install/setup.bash
 
-#### 1.4 Setup micro-ROS agent
+#### 1.3 Setup micro-ROS agent
 
     ros2 run micro_ros_setup create_agent_ws.sh
     ros2 run micro_ros_setup build_agent.sh
@@ -125,7 +120,7 @@ Now build everything:
 
 You can ignore 1 package had stderr output: microxrcedds_agent after building your workspace if it occours.
 
-#### 1.5 Install linorobot2 package
+#### 1.4 Install linorobot2 package
 
     cd $HOME/linorobot2_ws
     git clone -b $ROS_DISTRO https://github.com/linorobot/linorobot2 src/linorobot2
@@ -143,7 +138,7 @@ Now install the linorobot2 package:
     colcon build
     source install/setup.bash
 
-#### 1.7 Finishing up
+#### 1.5 Finishing up
 
 Add the following parameters to your _bashrc_ file as seen here:
 
