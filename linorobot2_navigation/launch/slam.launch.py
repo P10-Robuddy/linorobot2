@@ -36,22 +36,22 @@ def generate_launch_description():
     rviz_config_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_navigation'), 'rviz', 'linorobot2_slam.rviz']
     )
-    
+
     lc = LaunchContext()
     ros_distro = EnvironmentVariable('ROS_DISTRO')
     slam_param_name = 'slam_params_file'
-    if ros_distro.perform(lc) == 'foxy': 
+    if ros_distro.perform(lc) == 'foxy':
         slam_param_name = 'params_file'
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='sim', 
+            name='sim',
             default_value='false',
             description='Enable use_sime_time to true'
         ),
 
         DeclareLaunchArgument(
-            name='rviz', 
+            name='rviz',
             default_value='false',
             description='Run rviz'
         ),

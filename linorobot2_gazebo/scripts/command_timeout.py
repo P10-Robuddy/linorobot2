@@ -24,7 +24,7 @@ class CommandTimeout(Node):
         self.prev_cmd_time_ = self.get_clock().now()
         self.zero_cmd_sent_ = True
         self.twist_publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
-        
+
         brake_timer = self.create_timer(0.2, self.brake_timer_callback)
 
         twist_subscription = self.create_subscription(

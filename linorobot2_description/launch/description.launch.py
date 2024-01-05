@@ -35,25 +35,25 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='urdf', 
+            name='urdf',
             default_value=urdf_path,
             description='URDF path'
         ),
-        
+
         DeclareLaunchArgument(
-            name='publish_joints', 
+            name='publish_joints',
             default_value='true',
             description='Launch joint_states_publisher'
         ),
 
         DeclareLaunchArgument(
-            name='rviz', 
+            name='rviz',
             default_value='false',
             description='Run rviz'
         ),
 
         DeclareLaunchArgument(
-            name='use_sim_time', 
+            name='use_sim_time',
             default_value='false',
             description='Use simulation time'
         ),
@@ -92,7 +92,7 @@ def generate_launch_description():
         )
     ])
 
-#sources: 
+#sources:
 #https://navigation.ros.org/setup_guides/index.html#
 #https://answers.ros.org/question/374976/ros2-launch-gazebolaunchpy-from-my-own-launch-file/
 #https://github.com/ros2/rclcpp/issues/940

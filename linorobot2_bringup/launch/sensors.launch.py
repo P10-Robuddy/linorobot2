@@ -26,7 +26,7 @@ def generate_launch_description():
     laser_sensor_name = os.getenv('LINOROBOT2_LASER_SENSOR', '')
     base_laser_sensor_name = os.getenv('LINOROBOT2_BASE_LASER_SENSOR', '')
     depth_sensor_name = os.getenv('LINOROBOT2_DEPTH_SENSOR', '')
-    
+
     fake_laser_config_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'config', 'fake_laser.yaml']
     )
@@ -56,7 +56,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(laser_launch_path),
             condition=IfCondition(PythonExpression(['"" != "', laser_sensor_name, '"'])),
-            launch_arguments={'sensor': laser_sensor_name}.items()   
+            launch_arguments={'sensor': laser_sensor_name}.items()
         ),
 
         IncludeLaunchDescription(
@@ -66,13 +66,13 @@ def generate_launch_description():
                 'sensor': base_laser_sensor_name,
                 'topic_name': 'base/scan',
                 'frame_id': 'base_laser'
-            }.items()   
+            }.items()
         ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(depth_launch_path),
             condition=IfCondition(PythonExpression(['"" != "', depth_sensor_name, '"'])),
-            launch_arguments={'sensor': depth_sensor_name}.items()   
+            launch_arguments={'sensor': depth_sensor_name}.items()
         ),
 
         Node(
@@ -84,4 +84,3 @@ def generate_launch_description():
             parameters=[fake_laser_config_path]
         )
     ])
-

@@ -43,13 +43,13 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='base_serial_port', 
+            name='base_serial_port',
             default_value='/dev/ttyACM0',
             description='Linorobot Base Serial Port'
         ),
 
        DeclareLaunchArgument(
-            name='joy', 
+            name='joy',
             default_value='false',
             description='Use Joystick'
         ),
@@ -70,10 +70,10 @@ def generate_launch_description():
             parameters=[
                 ekf_config_path,
                 {
-                'map_frame': 'map',           
-                'odom_frame': robot_ns + '/odom',            
+                'map_frame': 'map',
+                'odom_frame': robot_ns + '/odom',
                 'base_link_frame': robot_ns + '_footprint',
-                'world_frame': robot_ns + '/odom', 
+                'world_frame': robot_ns + '/odom',
                 }
             ],
             remappings=[("odometry/filtered", "odom")]

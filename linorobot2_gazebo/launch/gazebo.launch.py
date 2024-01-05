@@ -42,7 +42,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='world', 
+            name='world',
             default_value=world_path,
             description='Gazebo world'
         ),
@@ -72,7 +72,7 @@ def generate_launch_description():
             name='ekf_filter_node',
             output='screen',
             parameters=[
-                {'use_sim_time': use_sim_time}, 
+                {'use_sim_time': use_sim_time},
                 ekf_config_path
             ],
             remappings=[("odometry/filtered", "odom")]
@@ -91,7 +91,7 @@ def generate_launch_description():
         )
     ])
 
-#sources: 
+#sources:
 #https://navigation.ros.org/setup_guides/index.html#
 #https://answers.ros.org/question/374976/ros2-launch-gazebolaunchpy-from-my-own-launch-file/
 #https://github.com/ros2/rclcpp/issues/940

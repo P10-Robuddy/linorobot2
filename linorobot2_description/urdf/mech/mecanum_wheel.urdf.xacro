@@ -32,15 +32,15 @@
         <mu2>0.01</mu2>
     </gazebo>
 
-    <gazebo reference="${side}_wheel_link">  
-      <visual>  
+    <gazebo reference="${side}_wheel_link">
+      <visual>
         <material>
-          <ambient>0.1764 0.4588 0.8509 1.0</ambient>  
-          <diffuse>0.1764 0.4588 0.8509 1.0</diffuse>  
-          <specular>0.1764 0.4588 0.8509 1.0</specular>  
-          <emissive>0.0 0.0 0.0 0.0</emissive>  
+          <ambient>0.1764 0.4588 0.8509 1.0</ambient>
+          <diffuse>0.1764 0.4588 0.8509 1.0</diffuse>
+          <specular>0.1764 0.4588 0.8509 1.0</specular>
+          <emissive>0.0 0.0 0.0 0.0</emissive>
         </material>
-      </visual>  
+      </visual>
     </gazebo>
     <joint name="${side}_wheel_joint" type="continuous">
       <axis xyz="0 1 0" />

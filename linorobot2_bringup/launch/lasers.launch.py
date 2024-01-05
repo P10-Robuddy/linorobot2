@@ -24,26 +24,26 @@ def generate_launch_description():
     ydlidar_config_path = PathJoinSubstitution(
         [FindPackageShare("linorobot2_bringup"), "config", "ydlidar.yaml"]
     )
-    
+
     rplidar2_launch_path = PathJoinSubstitution(
         [FindPackageShare('rplidar_ros2'), 'launch', 'rplidar_a3_launch.py']
     )
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='sensor', 
+            name='sensor',
             default_value='ydlidar',
             description='Sensor to launch'
         ),
 
         DeclareLaunchArgument(
-            name='topic_name', 
+            name='topic_name',
             default_value='scan',
             description='Laser Topic Name'
         ),
 
         DeclareLaunchArgument(
-            name='frame_id', 
+            name='frame_id',
             default_value='laser',
             description='Laser Frame ID'
         ),
@@ -56,7 +56,7 @@ def generate_launch_description():
             output='screen',
             emulate_tty=True,
             remappings=[('scan', LaunchConfiguration('topic_name'))],
-            parameters=[{ 
+            parameters=[{
                 'port': '/dev/ydlidar',
                 'frame_id': LaunchConfiguration('frame_id'),
                 'ignore_array': '',
@@ -80,13 +80,13 @@ def generate_launch_description():
                 'invalid_range_is_inf': False
             }]
         ),
-        
-        
+
+
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(rplidar2_launch_path)
         ),
-        
-        Node( 
+
+        Node(
             condition=LaunchConfigurationEquals('sensor', 'xv11'),
             name='xv_11_driver',
             package='xv_11_driver',
@@ -95,7 +95,7 @@ def generate_launch_description():
             remappings=[('scan', LaunchConfiguration('topic_name'))],
             parameters=[{
                 'port': '/dev/ttyACM0',
-                'baud_rate': 115200, 
+                'baud_rate': 115200,
                 'frame_id': LaunchConfiguration('frame_id'),
                 'firmware_version': 2
             }],
@@ -115,4 +115,3 @@ def generate_launch_description():
             ]
         )
     ])
-

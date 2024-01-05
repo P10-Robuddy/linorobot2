@@ -44,19 +44,19 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='sim', 
+            name='sim',
             default_value='false',
             description='Enable use_sime_time to true'
         ),
 
         DeclareLaunchArgument(
-            name='rviz', 
+            name='rviz',
             default_value='false',
             description='Run rviz'
         ),
 
        DeclareLaunchArgument(
-            name='map', 
+            name='map',
             default_value=default_map_path,
             description='Navigation map path'
         ),

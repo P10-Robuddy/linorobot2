@@ -30,7 +30,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='sensor', 
+            name='sensor',
             default_value='realsense',
             description='Sensor to launch'
         ),
@@ -42,9 +42,9 @@ def generate_launch_description():
             condition=LaunchConfigurationEquals('sensor', 'realsense'),
             launch_arguments={
                 'pointcloud.enable': 'true',
-                'ordered_pc': 'true', 
+                'ordered_pc': 'true',
                 'initial_reset': 'true'
-            }.items()   
+            }.items()
         ),
 
         IncludeLaunchDescription(
@@ -59,7 +59,6 @@ def generate_launch_description():
                 'node_name': 'zed',
                 'publish_urdf': 'true',
                 'base_frame': 'camera_link'
-            }.items()   
+            }.items()
         ),
     ])
-

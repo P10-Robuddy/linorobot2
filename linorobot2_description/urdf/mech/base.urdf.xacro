@@ -9,14 +9,14 @@
         <geometry>
           <!--box size="${length} ${width} ${height}"/-->
           <mesh scale="0.001 0.001 0.001" filename="file:///home/ubu/linorobot2_ws/src/linorobot2/linorobot2_description/meshes/layer_1_solidworks.STL"/>
-          
+
           <!-- <mesh filename="" scale="0.001 0.001 0.001"/> -->
         </geometry>
         <material name="yellow">
           <color rgba="0.8784 0.6627 0.6627 1.0"/>
         </material>
       </visual>
-      
+
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -33,15 +33,15 @@
       </inertial>
     </link>
 
-    <gazebo reference="${namespace}_base_link">  
-      <visual>  
+    <gazebo reference="${namespace}_base_link">
+      <visual>
         <material>
-          <ambient>0.8392 0.6314 0.0 1.0</ambient>  
-          <diffuse>0.8392 0.6314 0.0 1.0</diffuse>  
-          <specular>0.99 0.99 0.99 1.0</specular>  
-          <emissive>0.0 0.0 0.0 0.0</emissive>  
+          <ambient>0.8392 0.6314 0.0 1.0</ambient>
+          <diffuse>0.8392 0.6314 0.0 1.0</diffuse>
+          <specular>0.99 0.99 0.99 1.0</specular>
+          <emissive>0.0 0.0 0.0 0.0</emissive>
         </material>
-      </visual> 
+      </visual>
     </gazebo>
 
     <joint name="${namespace}_base_to_footprint" type="fixed">

@@ -12,7 +12,7 @@
           <color rgba="0.416 0.051 0.047 1.0"/>
         </material>
       </visual>
-      
+
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
@@ -28,16 +28,16 @@
                  izz="${(1/12) * 0.135 * ((0.030 * 0.030) + (0.124  * 0.124))}"/>
       </inertial>
     </link>
-    
-    <gazebo reference="camera_link">  
-      <visual>  
+
+    <gazebo reference="camera_link">
+      <visual>
         <material>
-          <ambient>0.416 0.051 0.047 1.0</ambient>  
-          <diffuse>0.416 0.051 0.047 1.0</diffuse>  
-          <specular>0.416 0.051 0.047 1.0</specular>  
-          <emissive>0.416 0.051 0.047 1.0</emissive>  
+          <ambient>0.416 0.051 0.047 1.0</ambient>
+          <diffuse>0.416 0.051 0.047 1.0</diffuse>
+          <specular>0.416 0.051 0.047 1.0</specular>
+          <emissive>0.416 0.051 0.047 1.0</emissive>
         </material>
-      </visual> 
+      </visual>
     </gazebo>rgb(213,28,40)
 
     <joint name="camera_to_base_link" type="fixed">
@@ -88,4 +88,3 @@
     </gazebo>
   </xacro:macro>
 </robot>
-  
