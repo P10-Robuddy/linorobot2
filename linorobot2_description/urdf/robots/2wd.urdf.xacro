@@ -19,16 +19,11 @@
     mass="${base_mass}"
     wheel_radius="${wheel_radius}"
     wheel_pos_z="${wheel_pos_z}"
-    namespace="$(arg prefix)"
 />
 
-  <xacro:layer2
-    namespace="$(arg prefix)"
-  />
+  <xacro:layer2/>
 
-  <xacro:layer3
-    namespace="$(arg prefix)"
-  />
+  <xacro:layer3/>
 
   <xacro:wheel
     side="left"
@@ -38,7 +33,6 @@
     pos_y="${wheel_pos_y}"
     pos_z="${wheel_pos_z}"
     mass="${wheel_mass}"
-    namespace="$(arg prefix)"
   />
 
   <xacro:wheel
@@ -49,7 +43,6 @@
     pos_y="${-wheel_pos_y}"
     pos_z="${wheel_pos_z}"
     mass="${wheel_mass}"
-    namespace="$(arg prefix)"
   />
 
   <xacro:if value="${front_caster_wheel}">
@@ -59,7 +52,6 @@
       base_length="${base_length}"
       wheel_radius="${wheel_radius}"
       wheel_pos_z="${wheel_pos_z}"
-      namespace="$(arg prefix)"
     />
   </xacro:if>
 
@@ -70,17 +62,12 @@
       base_length="${base_length}"
       wheel_radius="${wheel_radius}"
       wheel_pos_z="${wheel_pos_z}"
-      namespace="$(arg prefix)"
     />
   </xacro:if>
 
-  <xacro:imu
-    namespace="$(arg prefix)"
-  />
+  <xacro:imu/>
 
-  <xacro:generic_laser
-    namespace="$(arg prefix)"
-    >
+  <xacro:generic_laser>
     <xacro:insert_block name="laser_pose" />origin
   </xacro:generic_laser>
 

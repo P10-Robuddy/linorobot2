@@ -14,16 +14,20 @@
 import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch.conditions import IfCondition
+from ament_index_python import get_package_share_directory
+from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
 
     robot_ns = os.getenv('ROBOT_NAMESPACE')
+    if robot_ns is None:
+        robot_ns = "polybot01"
 
     sensors_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'launch', 'sensors.launch.py']
@@ -40,6 +44,17 @@ def generate_launch_description():
     ekf_config_path = PathJoinSubstitution(
         [FindPackageShare("linorobot2_base"), "config", "ekf.yaml"]
     )
+
+    # ekf namespace configuration
+    if robot_ns != "":
+        ekf_config = RewrittenYaml(
+            source_file=ekf_config_path,
+            root_key=robot_ns,
+            param_rewrites={},
+            convert_types=True
+        )
+    else:
+        ekf_config = ekf_config_path
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -68,15 +83,13 @@ def generate_launch_description():
             name='ekf_filter_node',
             output='screen',
             parameters=[
-                ekf_config_path,
-                {
-                'map_frame': 'map',
-                'odom_frame': robot_ns + '/odom',
-                'base_link_frame': robot_ns + '_footprint',
-                'world_frame': robot_ns + '/odom',
-                }
+                ekf_config
             ],
-            remappings=[("odometry/filtered", "odom")]
+            remappings=[
+                ("odometry/filtered", "odom"),
+                ('/tf', 'tf'),
+                ('/tf_static', 'tf_static')
+            ]
         ),
 
         IncludeLaunchDescription(

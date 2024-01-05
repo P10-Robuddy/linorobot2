@@ -56,7 +56,10 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(laser_launch_path),
             condition=IfCondition(PythonExpression(['"" != "', laser_sensor_name, '"'])),
-            launch_arguments={'sensor': laser_sensor_name}.items()
+            launch_arguments={
+                'sensor': laser_sensor_name,
+                'frame_id': 'laser'
+            }.items()
         ),
 
         IncludeLaunchDescription(

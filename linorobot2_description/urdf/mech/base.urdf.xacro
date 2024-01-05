@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="base" params="length width height mass wheel_radius wheel_pos_z namespace">
-    <link name="${namespace}_footprint"/>
+  <xacro:macro name="base" params="length width height mass wheel_radius wheel_pos_z">
+    <link name="base_footprint"/>
 
-    <link name="${namespace}_base_link">
+    <link name="base_link">
       <visual>
         <origin xyz="-0.15 0.1 0" rpy="0 0 -1.57"/>
         <geometry>
           <!--box size="${length} ${width} ${height}"/-->
-          <mesh scale="0.001 0.001 0.001" filename="file:///home/ubu/linorobot2_ws/src/linorobot2/linorobot2_description/meshes/layer_1_solidworks.STL"/>
+          <mesh scale="0.001 0.001 0.001" filename="file://~/linorobot2_ws/src/linorobot2/linorobot2_description/meshes/layer_1_solidworks.STL"/>
 
           <!-- <mesh filename="" scale="0.001 0.001 0.001"/> -->
         </geometry>
@@ -33,7 +33,7 @@
       </inertial>
     </link>
 
-    <gazebo reference="${namespace}_base_link">
+    <gazebo reference="base_link">
       <visual>
         <material>
           <ambient>0.8392 0.6314 0.0 1.0</ambient>
@@ -44,9 +44,9 @@
       </visual>
     </gazebo>
 
-    <joint name="${namespace}_base_to_footprint" type="fixed">
-      <parent link="${namespace}_footprint"/>
-      <child link="${namespace}_base_link"/>
+    <joint name="base_to_footprint" type="fixed">
+      <parent link="base_footprint"/>
+      <child link="base_link"/>
       <origin xyz="0 0 ${wheel_radius - wheel_pos_z}" rpy="0 0 0"/>
     </joint>
   </xacro:macro>
