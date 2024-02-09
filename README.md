@@ -234,7 +234,7 @@ linorobot2_bringup.launch.py or gazebo.launch.py must always be run on a separat
 
 Run [teleop_twist_keyboard](https://index.ros.org/r/teleop_twist_keyboard/) to control the robot using your keyboard:
 
-    ros2 run teleop_twist_keyboard teleop_twist_keyboard
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=$ROBOT_NAMESPACE/cmd_vel
 
 Press:
 
