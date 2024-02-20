@@ -161,7 +161,7 @@ Create a workspace on the host machine
 Install linorobot2 package on the host machine:
 
     cd linorobot2_ws
-    git clone -b $ROS_DISTRO https://github.com/linorobot/linorobot2 src/linorobot2
+    git clone -b $ROS_DISTRO https://github.com/p9-robuddy/linorobot2 src/linorobot2
     rosdep update && rosdep install --from-path src --ignore-src -y --skip-keys microxrcedds_agent --skip-keys micro_ros_agent
 
 Now build it:
