@@ -3,7 +3,7 @@
   <xacro:macro name="layer2" params="length width height mass wheel_radius wheel_pos_z">
    <link name="layer_2">
       <visual>
-        <origin xyz="-0.015 0.1 0" rpy="0 0 0"/>
+        <origin xyz="0 -0.0015 0" rpy="0 0 0"/>
         <geometry>
           <box size="${length} ${width} ${height}"/>
         </geometry>
@@ -12,7 +12,7 @@
 
 
       <collision>
-        <origin xyz="-0.015 0 0" rpy="0 0 0"/>
+        <origin xyz="0 -0.0015 0" rpy="0 0 0"/>
         <geometry>
           <box size="${length} ${width} ${height}"/>
         </geometry>
