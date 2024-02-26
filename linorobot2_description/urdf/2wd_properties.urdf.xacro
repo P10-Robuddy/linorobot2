@@ -20,7 +20,7 @@
   <xacro:property name="rear_caster_wheel" value="true" />
 
   <xacro:property name="laser_pose">
-    <origin xyz="0 0 0.0075" rpy="0 0 0"/>
+    <origin xyz="0 0.125 0.0075" rpy="0 0 0"/>
   </xacro:property>
 
   <!-- <xacro:property name="depth_sensor_pose">
