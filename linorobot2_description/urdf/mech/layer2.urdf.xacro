@@ -1,14 +1,22 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="layer2">
+  <xacro:macro name="layer2" params="length width height mass wheel_radius wheel_pos_z">
    <link name="layer_2">
       <visual>
-        <origin xyz="-0.15 0.1 0" rpy="0 0 -1.57"/>
+        <origin xyz="-0.015 0.1 0" rpy="0 0 0"/>
         <geometry>
-          <mesh scale="0.001 0.001 0.001" filename="file://~/linorobot2_ws/src/linorobot2/linorobot2_description/meshes/layer_2_solidworks.STL"/>
+          <box size="${length} ${width} ${height}"/>
         </geometry>
         <material name="Grey"/>
       </visual>
+
+
+      <collision>
+        <origin xyz="-0.015 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${length} ${width} ${height}"/>
+        </geometry>
+      </collision>
     </link>
 
     <joint name="base_to_layer2" type="fixed">
