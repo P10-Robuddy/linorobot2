@@ -138,6 +138,8 @@ Now install the linorobot2 package:
     colcon build
     source install/setup.bash
 
+\* microxrcedds_agent and micro_ros_agent dependency checks are skipped to prevent this [issue](https://github.com/micro-ROS/micro_ros_setup/issues/138) of finding its keys. This means that you have to always add `--skip-keys microxrcedds_agent --skip-keys micro_ros_agent` whenever you have to run `rosdep install` on the ROS2 workspace where you installed linorobot2.
+
 #### 1.5 Finishing up
 
 Add the following parameters to your _bashrc_ file as seen here:
@@ -147,44 +149,11 @@ Add the following parameters to your _bashrc_ file as seen here:
     echo "export LINOROBOT_DEPTH_SENSOR=realsense" >> ~/.bashrc
     source ~/.bashrc
 
-### 2. Host Machine / Development Computer - Gazebo Simulation (Optional)
-
-This step is only required if you plan to use Gazebo later. This comes in handy if you want to fine-tune parameters (ie. SLAM Toolbox, AMCL, Nav2) or test your applications on a virtual robot.
-
-#### 2.1 Install linorobot2 Package
-
-Create a workspace on the host machine
-
-    cd $HOME
-    mkdir linorobot2_ws
-
-Install linorobot2 package on the host machine:
-
-    cd linorobot2_ws
-    git clone -b $ROS_DISTRO https://github.com/p10-robuddy/linorobot2 src/linorobot2
-    rosdep update && rosdep install --from-path src --ignore-src -y --skip-keys microxrcedds_agent --skip-keys micro_ros_agent
-
-Now build it:
-
-    colcon build
-    source install/setup.bash
-
-\* microxrcedds_agent and micro_ros_agent dependency checks are skipped to prevent this [issue](https://github.com/micro-ROS/micro_ros_setup/issues/138) of finding its keys. This means that you have to always add `--skip-keys microxrcedds_agent --skip-keys micro_ros_agent` whenever you have to run `rosdep install` on the ROS2 workspace where you installed linorobot2.
-
-#### 2.2 Define Robot Type
-
-Set LINOROBOT2_BASE env variable to the type of robot base used. Available env variables are _2wd_, _4wd_, and _mecanum_. For example:
-
-    echo "export LINOROBOT2_BASE=2wd" >> ~/.bashrc
-    source ~/.bashrc
-
-You can skip the next step (Host Machine - RVIZ Configurations) since this package already contains the same RVIZ configurations to visualize the robot.
-
-### 3. Host Machine - RVIZ Configurations (Optional)
+### 2. Host Machine Only - RVIZ Configurations (Optional)
 
 Install [linorobot2_viz](https://github.com/linorobot/linorobot2_viz) package to visualize the robot remotely specifically when creating a map or initializing/sending goal poses to the robot. The package has been separated to minimize the installation required if you're not using the simulation tools on the host machine.
 
-    cd <host_machine_ws>
+    cd $HOME/linorobot2_ws
     git clone https://github.com/linorobot/linorobot2_viz src/linorobot2_viz
     rosdep update && rosdep install --from-path src --ignore-src -y 
     colcon build
