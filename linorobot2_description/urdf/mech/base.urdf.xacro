@@ -2,7 +2,12 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="base" params="length width height mass wheel_radius wheel_pos_z">
     <link name="base_footprint"/>
-
+      <!-- <joint name="base_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="base_footprint"/>
+      </joint> -->
+      
     <link name="base_link">
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>

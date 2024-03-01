@@ -26,7 +26,7 @@ from launch.conditions import IfCondition, UnlessCondition
 MAP_NAME='playground' #change to the name of your own map here
 
 def generate_launch_description():
-    depth_sensor = os.getenv('LINOROBOT2_DEPTH_SENSOR', '')
+    #depth_sensor = os.getenv('LINOROBOT2_DEPTH_SENSOR', '')
 
     nav2_launch_path = PathJoinSubstitution(
         [FindPackageShare('nav2_bringup'), 'launch', 'bringup_launch.py']
@@ -40,13 +40,14 @@ def generate_launch_description():
         [FindPackageShare('linorobot2_navigation'), 'maps', f'{MAP_NAME}.yaml']
     )
 
+    nav2_sim_config_path = PathJoinSubstitution(
+        [FindPackageShare('linorobot2_navigation'), 'config', 'navigation_sim.yaml']
+    )
+
     nav2_config_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_navigation'), 'config', 'navigation.yaml']
     )
 
-    nav2_sim_config_path = PathJoinSubstitution(
-        [FindPackageShare('linorobot2_navigation'), 'config', 'navigation_sim.yaml']
-    )
 
 
     return LaunchDescription([
