@@ -4,12 +4,16 @@
   <xacro:property name="base_width" value="0.275" />
   <xacro:property name="base_height" value="0.003" />
   <xacro:property name="base_mass" value="1" />
+  <xacro:property name="layer2_length" value="0.35"/>
+  <xacro:property name="layer2_width" value="0.25"/>
+  <xacro:property name="layer2_height" value="0.0062"/>
 
-  <xacro:property name="wheel_radius" value="0.068" />
+
+  <xacro:property name="wheel_radius" value="0.0475" />
   <xacro:property name="wheel_width" value="0.01" />
   <xacro:property name="wheel_pos_x" value="0.0" />
   <xacro:property name="wheel_pos_y" value="0.13" />
-  <xacro:property name="wheel_pos_z" value="0.033" />
+  <xacro:property name="wheel_pos_z" value="0" />
   <xacro:property name="wheel_mass" value=".1" />
   <xacro:property name="wheel_torque" value="20" />
   <xacro:property name="front_caster_wheel" value="false" />
