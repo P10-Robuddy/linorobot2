@@ -118,6 +118,10 @@ Visualization Manager:
           Value: true
         right_wheel_link:
           Value: true
+        odom:
+          Value: true
+        map:
+          Value: true
       Marker Scale: 0.10000000149011612
       Name: TF
       Show Arrows: true

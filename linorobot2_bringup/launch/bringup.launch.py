@@ -24,10 +24,13 @@ from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
-
+    
+    # Set robot namespace to use the environment variable value of "robot_namespace"
     robot_ns = os.getenv('ROBOT_NAMESPACE')
+
+
     if robot_ns is None:
-        robot_ns = "polybot01"
+        robot_ns = "polybot02"
 
     sensors_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'launch', 'sensors.launch.py']
@@ -46,15 +49,22 @@ def generate_launch_description():
     )
 
     # ekf namespace configuration
-    if robot_ns != "":
-        ekf_config = RewrittenYaml(
+    ekf_config = RewrittenYaml(
             source_file=ekf_config_path,
             root_key=robot_ns,
             param_rewrites={},
             convert_types=True
-        )
-    else:
-        ekf_config = ekf_config_path
+        ) if robot_ns != "" else ekf_config_path
+    
+    # if robot_ns != "":
+    #     ekf_config = RewrittenYaml(
+    #         source_file=ekf_config_path,
+    #         root_key=robot_ns,
+    #         param_rewrites={},
+    #         convert_types=True
+    #     )
+    # else:
+    #     ekf_config = ekf_config_path
 
     return LaunchDescription([
         DeclareLaunchArgument(

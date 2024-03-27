@@ -94,7 +94,7 @@ def generate_launch_description():
             condition=IfCondition(LaunchConfiguration("rviz")),
             parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
         )
-    ])
+])
 
 #sources:
 #https://navigation.ros.org/setup_guides/index.html#

@@ -5,14 +5,17 @@
     
     
     <link name="base_link"/>
+    
+    
+    <link name="odom" />
 
-    <joint name="chassis_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="chassis"/>
-        <origin xyz="-0.105 0 0"/>
+    <joint name="odom_to_base" type="fixed">
+        <parent link="odom"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
     </joint>
 
-      <joint name="base_footprint_joint" type="fixed">
+    <joint name="base_footprint_joint" type="fixed">
         <parent link="base_link"/>
         <child link="base_footprint"/>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -21,6 +24,11 @@
 
     <link name="base_footprint"/>
 
+    <joint name="chassis_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="chassis"/>
+        <origin xyz="-0.105 0 0"/>
+    </joint>
 
     <link name="chassis">
       <visual>

@@ -58,7 +58,7 @@ def generate_launch_description():
             condition=IfCondition(PythonExpression(['"" != "', laser_sensor_name, '"'])),
             launch_arguments={
                 'sensor': laser_sensor_name,
-                'frame_id': 'laser'
+                'frame_id': 'laser',
             }.items()
         ),
 
@@ -68,7 +68,7 @@ def generate_launch_description():
             launch_arguments={
                 'sensor': base_laser_sensor_name,
                 'topic_name': 'base/scan',
-                'frame_id': 'base_laser'
+                'frame_id': 'base_laser',
             }.items()
         ),
 

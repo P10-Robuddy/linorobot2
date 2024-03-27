@@ -42,7 +42,7 @@
     </gazebo>
 
     <joint name="${side}_caster_wheel_joint" type="fixed">
-      <parent link="chassis"/>
+      <parent link="base_link"/>
       <child link="${side}_caster_wheel_link"/>
       <origin xyz="${caster_wheel_x} 0 0" rpy="0 0 0"/>
     </joint>
