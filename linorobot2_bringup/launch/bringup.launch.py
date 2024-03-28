@@ -24,7 +24,7 @@ from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
-    
+
     # Set robot namespace to use the environment variable value of "robot_namespace"
     robot_ns = os.getenv('ROBOT_NAMESPACE')
 
@@ -84,6 +84,7 @@ def generate_launch_description():
             executable='micro_ros_agent',
             name='micro_ros_agent',
             output='screen',
+            namespace=robot_ns,
             arguments=['serial', '--dev', LaunchConfiguration("base_serial_port")]
         ),
 
@@ -92,14 +93,15 @@ def generate_launch_description():
             executable='ekf_node',
             name='ekf_filter_node',
             output='screen',
+            namespace=robot_ns,
             parameters=[
                 ekf_config
             ],
-            remappings=[
-                ("odometry/filtered", "odom"),
-                ('/tf', 'tf'),
-                ('/tf_static', 'tf_static')
-            ]
+             remappings=[
+                 ("odometry/filtered", "odom"),
+                 ('/tf', 'tf'),
+                 ('/tf_static', 'tf_static')
+             ]
         ),
 
         IncludeLaunchDescription(

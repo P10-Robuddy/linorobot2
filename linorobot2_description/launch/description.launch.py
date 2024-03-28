@@ -25,6 +25,8 @@ def generate_launch_description():
     robot_base = os.getenv('LINOROBOT2_BASE')
     robot_ns = os.getenv('ROBOT_NAMESPACE')
 
+
+
     urdf_path = PathJoinSubstitution(
         [FindPackageShare("linorobot2_description"), "urdf/robots", f"{robot_base}.urdf.xacro"]
     )
@@ -62,6 +64,7 @@ def generate_launch_description():
             package='joint_state_publisher',
             executable='joint_state_publisher',
             name='joint_state_publisher',
+            namespace=robot_ns,
             condition=IfCondition(LaunchConfiguration("publish_joints"))
             # parameters=[
             #     {'use_sim_time': LaunchConfiguration('use_sim_time')}
@@ -73,6 +76,7 @@ def generate_launch_description():
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen',
+            namespace=robot_ns,
             parameters=[
                 {
                     'use_sim_time': LaunchConfiguration('use_sim_time'),
