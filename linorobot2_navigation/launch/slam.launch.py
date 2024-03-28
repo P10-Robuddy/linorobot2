@@ -40,7 +40,8 @@ def generate_launch_description():
     if robot_ns is None:
         robot_ns = "polybot01"
 
-    if robot_ns != "":
+    #For some reason these remappings makes rviz unable to recieve a map, and thus no localization takes place
+    if robot_ns == "":
         remappings = [
             ('/tf', 'tf'),
             ('/tf_static', 'tf_static'),

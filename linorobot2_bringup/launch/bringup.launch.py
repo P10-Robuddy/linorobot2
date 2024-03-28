@@ -30,7 +30,7 @@ def generate_launch_description():
 
 
     if robot_ns is None:
-        robot_ns = "polybot02"
+        robot_ns = "polybot01"
 
     sensors_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'launch', 'sensors.launch.py']
@@ -84,7 +84,6 @@ def generate_launch_description():
             executable='micro_ros_agent',
             name='micro_ros_agent',
             output='screen',
-            namespace=robot_ns,
             arguments=['serial', '--dev', LaunchConfiguration("base_serial_port")]
         ),
 
@@ -93,7 +92,6 @@ def generate_launch_description():
             executable='ekf_node',
             name='ekf_filter_node',
             output='screen',
-            namespace=robot_ns,
             parameters=[
                 ekf_config
             ],
