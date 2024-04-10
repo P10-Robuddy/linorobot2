@@ -17,7 +17,7 @@ slam_toolbox:
     mode: mapping #localization
     scan_queue_size: 1
     
-    #Other parameters
+    #Other parameters.. This doesnt seem to do anything :( 
     map_update_topic: /map_updates
 
     # if you'd like to immediately start continuing a map at a given pose
@@ -42,7 +42,7 @@ slam_toolbox:
     # General Parameters
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.5
+    minimum_travel_distance: 0.01
     minimum_travel_heading: 0.5
     scan_buffer_size: 10
     scan_buffer_maximum_scan_distance: 10.0

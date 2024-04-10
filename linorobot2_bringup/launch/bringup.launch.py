@@ -22,15 +22,16 @@ from launch.conditions import IfCondition
 from ament_index_python import get_package_share_directory
 from nav2_common.launch import RewrittenYaml
 
+# Set robot namespace to use the environment variable value of "robot_namespace"
+robot_ns = os.getenv('ROBOT_NAMESPACE')
+
+if robot_ns is None:
+    robot_ns = "polybot01"
+
+
 
 def generate_launch_description():
 
-    # Set robot namespace to use the environment variable value of "robot_namespace"
-    robot_ns = os.getenv('ROBOT_NAMESPACE')
-
-
-    if robot_ns is None:
-        robot_ns = "polybot01"
 
     sensors_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_bringup'), 'launch', 'sensors.launch.py']
@@ -48,23 +49,20 @@ def generate_launch_description():
         [FindPackageShare("linorobot2_base"), "config", "ekf.yaml"]
     )
 
+
+
     # ekf namespace configuration
-    ekf_config = RewrittenYaml(
+
+    
+    if robot_ns == "":
+        ekf_config = RewrittenYaml(
             source_file=ekf_config_path,
             root_key=robot_ns,
             param_rewrites={},
             convert_types=True
-        ) if robot_ns != "" else ekf_config_path
-    
-    # if robot_ns != "":
-    #     ekf_config = RewrittenYaml(
-    #         source_file=ekf_config_path,
-    #         root_key=robot_ns,
-    #         param_rewrites={},
-    #         convert_types=True
-    #     )
-    # else:
-    #     ekf_config = ekf_config_path
+        )
+    else:
+        ekf_config = ekf_config_path
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -95,13 +93,13 @@ def generate_launch_description():
             parameters=[
                 ekf_config
             ],
-             remappings=[
-                 ("odometry/filtered", "odom"),
-                 ('/tf', 'tf'),
-                 ('/tf_static', 'tf_static')
-             ]
+            #  remappings=[
+            #      ("odometry/filtered", "odom"),
+            #      ('/tf', 'tf'),
+            #      ('/tf_static', 'tf_static')
+            #  ]
         ),
-
+        
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(description_launch_path)
         ),

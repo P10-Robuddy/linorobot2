@@ -6,7 +6,7 @@
     
     <link name="base_link"/>
     
-    
+
     <link name="odom" />
 
     <joint name="odom_to_base" type="fixed">
