@@ -21,7 +21,7 @@ from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
-MAP_NAME='C4' #change to the name of your own map here
+MAP_NAME='grupperum' #change to the name of your own map here
 
 def generate_launch_description():
 
@@ -46,7 +46,7 @@ def generate_launch_description():
     if robot_ns is None:
         robot_ns = "polybot01"
 
-    if robot_ns != "":
+    if robot_ns == "":
         use_namespace = 'true'
     else:
         use_namespace = 'false'
