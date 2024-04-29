@@ -4,7 +4,7 @@ ekf_filter_node:
 # The frequency, in Hz, at which the filter will output a position estimate. Note that the filter will not begin
 # computation until it receives at least one message from one of the inputs. It will then run continuously at the
 # frequency specified here, regardless of whether it receives more measurements. Defaults to 30 if unspecified.
-        frequency: 20.0
+        frequency: 60.0
 
 # The period, in seconds, after which we consider a sensor to have timed out. In this event, we carry out a predict
 # cycle on the EKF without correcting it. This parameter can be thought of as the minimum frequency with which the
@@ -33,7 +33,7 @@ ekf_filter_node:
 # Debug settings. Not for the faint of heart. Outputs a ludicrous amount of information to the file specified by
 # debug_out_file. I hope you like matrices! Please note that setting this to true will have strongly deleterious
 # effects on the performance of the node. Defaults to false if unspecified.
-        debug: true
+        debug: false
 
 # Defaults to "robot_localization_debug.txt" if unspecified. Please specify the full path.
         debug_out_file: /home/polybot02/debug/file.txt
@@ -124,14 +124,18 @@ ekf_filter_node:
 # the thresholds.
         odom0_pose_rejection_threshold: 5.0
         odom0_twist_rejection_threshold: 1.0
-
+        #x     , y     , z,
+        #roll  , pitch , yaw,
+        #vx    , vy    , vz,
+        #vroll , vpitch, vyaw,
+        #ax    , ay    , az
 # Further input parameter examples
         imu0: imu/data
         imu0_config: [false, false, false,
-                      true,  true,  true,
+                      false,  false,  false,
                       false, false, false,
                       true,  true,  true,
-                      true,  true,  true]
+                      false,  false,  false]
         imu0_nodelay: false
         imu0_differential: false
         imu0_relative: true

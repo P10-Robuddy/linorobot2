@@ -18,7 +18,7 @@ slam_toolbox:
     scan_queue_size: 1
     
     #Other parameters.. This doesnt seem to do anything :( 
-    map_update_topic: /map_updates
+    #map_update_topic: /map_updates
 
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
