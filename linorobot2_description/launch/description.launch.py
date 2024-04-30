@@ -64,6 +64,7 @@ def generate_launch_description():
             package='joint_state_publisher',
             executable='joint_state_publisher',
             name='joint_state_publisher',
+            namespace = robot_ns,
             condition=IfCondition(LaunchConfiguration("publish_joints"))
             # parameters=[
             #     {'use_sim_time': LaunchConfiguration('use_sim_time')}
@@ -74,11 +75,12 @@ def generate_launch_description():
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
+            namespace = robot_ns,
             output='screen',
             parameters=[
                 {
                     'use_sim_time': LaunchConfiguration('use_sim_time'),
-                    'robot_description': Command(['xacro ', LaunchConfiguration('urdf')])
+                    'robot_description': Command(['xacro ', LaunchConfiguration('urdf')]),
                 }
             ],
             remappings=[

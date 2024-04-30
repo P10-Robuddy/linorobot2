@@ -54,7 +54,7 @@ def generate_launch_description():
     # ekf namespace configuration
 
     
-    if robot_ns == "":
+    if robot_ns != "":
         ekf_config = RewrittenYaml(
             source_file=ekf_config_path,
             root_key=robot_ns,
@@ -90,14 +90,14 @@ def generate_launch_description():
             executable='ekf_node',
             name='ekf_filter_node',
             output='screen',
+            namespace= robot_ns,
             parameters=[
                 ekf_config
             ],
-            #  remappings=[
-            #      ("odometry/filtered", "odom"),
-            #      ('/tf', 'tf'),
-            #      ('/tf_static', 'tf_static')
-            #  ]
+             remappings=[
+                 ('/tf', 'tf'),
+                 ('/tf_static', 'tf_static')
+             ]
         ),
         
         IncludeLaunchDescription(
