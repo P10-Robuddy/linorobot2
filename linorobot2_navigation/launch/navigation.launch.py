@@ -42,7 +42,7 @@ def generate_launch_description():
          'config', 'navigation.yaml']
     )
 
-    robot_ns = os.environ.get('ROBOT_NAMESPACE')
+    robot_ns = os.getenv('ROBOT_NAMESPACE')
     if robot_ns is None:
         robot_ns = "polybot01"
 
@@ -81,7 +81,6 @@ def generate_launch_description():
                 'use_namespace': 'true',
                 'use_composition': 'True',
                 'params_file': nav2_config_path,
-                'namespace' : robot_ns,
                 'autostart' : 'True'
             }.items()
         ),

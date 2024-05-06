@@ -66,9 +66,6 @@ def generate_launch_description():
             name='joint_state_publisher',
             namespace = robot_ns,
             condition=IfCondition(LaunchConfiguration("publish_joints"))
-            # parameters=[
-            #     {'use_sim_time': LaunchConfiguration('use_sim_time')}
-            # ] #since galactic use_sim_time gets passed somewhere and rejects this when defined from launch file
         ),
 
         Node(
@@ -81,6 +78,7 @@ def generate_launch_description():
                 {
                     'use_sim_time': LaunchConfiguration('use_sim_time'),
                     'robot_description': Command(['xacro ', LaunchConfiguration('urdf')]),
+                    'ignore_timestamp': True
                 }
             ],
             remappings=[

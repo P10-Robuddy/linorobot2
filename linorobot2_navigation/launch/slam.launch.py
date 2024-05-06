@@ -47,6 +47,7 @@ def generate_launch_description():
             ('/tf_static', 'tf_static'),
             ('/scan', 'scan'),
             ('/map', 'map'),
+            ('/map_updates', 'map_updates'),
             ('/map_metadata', 'map_metadata')
         ]
         slam_param_substitutions = {}

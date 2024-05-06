@@ -13,8 +13,8 @@ slam_toolbox:
     odom_frame: odom
     map_frame: map
     base_frame: base_footprint
-    scan_topic: /scan
-    mode: mapping #localization
+    scan_topic: scan
+    mode: localization #mapping
     scan_queue_size: 1
     
     #Other parameters.. This doesnt seem to do anything :( 
