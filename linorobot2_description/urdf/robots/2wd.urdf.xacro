@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<robot name="linorobot2_2wd" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="linorobot2_2wd" xmlns:xacro="http://ros.org/wiki/xacro"/>
 
   <xacro:include filename="$(find linorobot2_description)/urdf/2wd_properties.urdf.xacro" />
-  <xacro:include filename="$(find linorobot2_description)/urdf/mech/base.urdf.xacro" />
+  <xacro:include filename="$(find linorobot2_description)/urdf/mech/base.urdf.xacro"  />
   <xacro:include filename="$(find linorobot2_description)/urdf/mech/layer2.urdf.xacro" />
   <xacro:include filename="$(find linorobot2_description)/urdf/mech/layer3.urdf.xacro" />
   <xacro:include filename="$(find linorobot2_description)/urdf/mech/wheel.urdf.xacro" />

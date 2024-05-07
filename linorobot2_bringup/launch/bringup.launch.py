@@ -80,6 +80,7 @@ def generate_launch_description():
         Node(
             package='micro_ros_agent',
             executable='micro_ros_agent',
+            namespace= robot_ns,
             name='micro_ros_agent',
             output='screen',
             arguments=['serial', '--dev', LaunchConfiguration("base_serial_port")]
