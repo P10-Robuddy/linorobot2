@@ -19,21 +19,19 @@ from launch.substitutions import LaunchConfiguration, Command, PathJoinSubstitut
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import ComposableNodeContainer
+from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description():
     use_sim_time = True
-
-    joy_launch_path = PathJoinSubstitution(
-        [FindPackageShare('linorobot2_bringup'), 'launch', 'joy_teleop.launch.py']
-    )
 
     ekf_config_path = PathJoinSubstitution(
         [FindPackageShare("linorobot2_base"), "config", "ekf.yaml"]
     )
 
     world_path = PathJoinSubstitution(
-        [FindPackageShare("linorobot2_gazebo"), "worlds", "playground.world"]
+        [FindPackageShare("linorobot2_gazebo"), "worlds", "gas_station.world"]
     )
 
     description_launch_path = PathJoinSubstitution(
@@ -42,9 +40,33 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument(
-            name='world',
+            name='world', 
             default_value=world_path,
             description='Gazebo world'
+        ),
+
+        DeclareLaunchArgument(
+            name='spawn_x', 
+            default_value='0.0',
+            description='Robot spawn position in X axis'
+        ),
+
+        DeclareLaunchArgument(
+            name='spawn_y', 
+            default_value='0.0',
+            description='Robot spawn position in Y axis'
+        ),
+
+        DeclareLaunchArgument(
+            name='spawn_z', 
+            default_value='0.0',
+            description='Robot spawn position in Z axis'
+        ),
+            
+        DeclareLaunchArgument(
+            name='spawn_yaw', 
+            default_value='0.0',
+            description='Robot spawn heading'
         ),
 
         ExecuteProcess(
@@ -57,7 +79,14 @@ def generate_launch_description():
             executable='spawn_entity.py',
             name='urdf_spawner',
             output='screen',
-            arguments=["-topic", "robot_description", "-entity", "linorobot2"]
+            arguments=[
+                '-topic', 'robot_description', 
+                '-entity', 'linorobot2', 
+                '-x', LaunchConfiguration('spawn_x'),
+                '-y', LaunchConfiguration('spawn_y'),
+                '-z', LaunchConfiguration('spawn_z'),
+                '-Y', LaunchConfiguration('spawn_yaw'),
+            ]
         ),
 
         Node(
@@ -72,7 +101,7 @@ def generate_launch_description():
             name='ekf_filter_node',
             output='screen',
             parameters=[
-                {'use_sim_time': use_sim_time},
+                {'use_sim_time': use_sim_time}, 
                 ekf_config_path
             ],
             remappings=[("odometry/filtered", "odom")]
@@ -84,14 +113,10 @@ def generate_launch_description():
                 'use_sim_time': str(use_sim_time),
                 'publish_joints': 'false',
             }.items()
-        ),
-
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(joy_launch_path),
         )
     ])
 
-#sources:
+#sources: 
 #https://navigation.ros.org/setup_guides/index.html#
 #https://answers.ros.org/question/374976/ros2-launch-gazebolaunchpy-from-my-own-launch-file/
 #https://github.com/ros2/rclcpp/issues/940
