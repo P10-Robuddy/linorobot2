@@ -21,7 +21,7 @@ from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
-MAP_NAME='grupperum' #change to the name of your own map here
+MAP_NAME='gas_station' #change to the name of your own map here
 
 def generate_launch_description():
 
