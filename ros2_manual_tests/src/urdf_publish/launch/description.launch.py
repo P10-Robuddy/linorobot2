@@ -9,7 +9,7 @@ def generate_launch_description():
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
 
-    urdf_file_name = '2wd.urdf.xml'
+    urdf_file_name = 'polybot.urdf.xml'
     urdf = os.path.join(
         get_package_share_directory('urdf_publish'),
         urdf_file_name)

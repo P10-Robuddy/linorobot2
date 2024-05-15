@@ -20,31 +20,34 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
+from launch.conditions import IfCondition, UnlessCondition
+
 
 MAP_NAME='gas_station' #change to the name of your own map here
 
 def generate_launch_description():
-
-    map_yaml_file = LaunchConfiguration('map')
+    #depth_sensor = os.getenv('LINOROBOT2_DEPTH_SENSOR', '')
 
     nav2_launch_path = PathJoinSubstitution(
-        [FindPackageShare('linorobot2_navigation'),
-         'launch', 'nav_bringup.launch.py']
+        [FindPackageShare('nav2_bringup'), 'launch', 'bringup_launch.py']
     )
 
     rviz_config_path = PathJoinSubstitution(
-        [FindPackageShare('linorobot2_navigation'), 'rviz',
-         'linorobot2_navigation.rviz']
+        [FindPackageShare('linorobot2_navigation'), 'rviz', 'linorobot2_navigation.rviz']
+    )
+
+    default_map_path = PathJoinSubstitution(
+        [FindPackageShare('linorobot2_navigation'), 'maps', f'{MAP_NAME}.yaml']
+    )
+
+    nav2_sim_config_path = PathJoinSubstitution(
+        [FindPackageShare('linorobot2_navigation'), 'config', 'navigation_sim.yaml']
     )
 
     nav2_config_path = PathJoinSubstitution(
-        [FindPackageShare('linorobot2_navigation'),
-         'config', 'navigation.yaml']
+        [FindPackageShare('linorobot2_navigation'), 'config', 'navigation.yaml']
     )
 
-    robot_ns = os.environ.get('ROBOT_NAMESPACE')
-    if robot_ns is None:
-        robot_ns = "polybot01"
 
     if robot_ns == "":
         use_namespace = 'true'
@@ -64,25 +67,29 @@ def generate_launch_description():
             description='Run rviz'
         ),
 
-        DeclareLaunchArgument(
+       DeclareLaunchArgument(
             name='map',
-            default_value=PathJoinSubstitution(
-                [FindPackageShare('linorobot2_navigation'), 'maps', 'C4.yaml']
-            ),
-            description='Map yaml file'
+            default_value=default_map_path,
+            description='Navigation map path'
         ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(nav2_launch_path),
+            condition=UnlessCondition(LaunchConfiguration("sim")),
             launch_arguments={
-                'map': map_yaml_file,
+                'map': LaunchConfiguration("map"),
                 'use_sim_time': LaunchConfiguration("sim"),
-                'namespace': robot_ns,
-                'use_namespace': use_namespace,
-                'use_composition': 'True',
-                'params_file': nav2_config_path,
-                'namespace' : robot_ns,
-                'autostart' : 'True'
+                'params_file': nav2_config_path
+            }.items()
+        ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(nav2_launch_path),
+            condition=IfCondition(LaunchConfiguration("sim")),
+            launch_arguments={
+                'map': LaunchConfiguration("map"),
+                'use_sim_time': LaunchConfiguration("sim"),
+                'params_file': nav2_sim_config_path
             }.items()
         ),
 
