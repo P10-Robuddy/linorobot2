@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="diff_drive_controller" params="wheel_separation wheel_radius wheel_torque">
     <gazebo>
@@ -15,7 +16,8 @@
         <publish_odom>true</publish_odom>
         <publish_odom_tf>false</publish_odom_tf>
         <publish_wheel_tf>true</publish_wheel_tf>
-        <odometry_frame>odom</odometry_frame>
+        <odemetry_topic>/odom</odemetry_topic>
+        <odometry_frame>/odom</odometry_frame>
       </plugin>
     </gazebo>
   </xacro:macro>
