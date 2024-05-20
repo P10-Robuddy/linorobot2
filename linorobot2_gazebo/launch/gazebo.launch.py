@@ -31,9 +31,9 @@ def generate_launch_description():
     )
 
     world_path = PathJoinSubstitution(
-        [FindPackageShare("linorobot2_gazebo"), "worlds", "gas_station.world"]
+        [FindPackageShare("linorobot2_gazebo"), "worlds","experiment_rooms", "worlds", "room4", "world.model"]
     )
-
+# linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/world.model
     description_launch_path = PathJoinSubstitution(
         [FindPackageShare('linorobot2_description'), 'launch', 'description.launch.py']
     )
