@@ -7,86 +7,52 @@ import csv
 
 class MapProcessing:
 
-    def polygonizeImage(self, image) -> list:
+    def polygonizeImage(self, image, blur_ksize=(5, 5), area_threshold=10000) -> list:
         # Preprocessing
-        blurredImage = cv2.GaussianBlur(image, (5, 5), 0)
+        blurredImage = cv2.GaussianBlur(image, blur_ksize, 0)
         _, binary_image = cv2.threshold(blurredImage, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         # Find all contours
         contours, _ = cv2.findContours(binary_image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Set the area threshold to distinguish between rooms and obstacles
-        area_threshold = 10000  # Adjust as needed based on the size of your rooms and obstacles
-
         # Filter contours based on area
-        filtered_contours = []
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            if area > area_threshold:
-                filtered_contours.append(contour)
+        filtered_contours = [contour for contour in contours if cv2.contourArea(contour) > area_threshold]
 
         # Simplify contours to polygons
-        polygons = []
-        for contour in filtered_contours:
-            epsilon = 0.01 * cv2.arcLength(contour, True)
-            polygon = cv2.approxPolyDP(contour, epsilon, True)
-            polygons.append(polygon)
+        polygons = [cv2.approxPolyDP(contour, 0.01 * cv2.arcLength(contour, True), True) for contour in filtered_contours]
 
         return polygons
 
     def triangulatePolygons(self, polygons):
-        all_points = np.concatenate(polygons)[:, 0, :]
+        all_points = np.vstack(polygons)[:, 0, :]
 
         # Perform Delaunay triangulation
         triangulation = Delaunay(all_points)
 
         return triangulation.simplices, all_points
 
+    def calculateWaypoints(self, triangles, points):
+        waypoints = [np.mean(points[triangle_indices], axis=0, dtype=np.int32) for triangle_indices in triangles]
+        return waypoints
+
     def visualizeTriangles(self, image, triangles, points, waypoints):
-        # Create a copy of the image to draw triangles, waypoints, and coordinates on
-        image_with_triangles_and_waypoints = image.copy()
+        image_with_triangles_and_waypoints = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
         # Draw each triangle on the image
         for triangle_indices in triangles:
-            # Get the vertices of the triangle
             triangle_vertices = points[triangle_indices]
-
-            # Draw the triangle
             cv2.polylines(image_with_triangles_and_waypoints, [triangle_vertices], True, (0, 255, 0), thickness=2)
 
         # Draw waypoints (centers of triangles) on the image and display coordinates
         for waypoint in waypoints:
-            # Draw waypoint
             cv2.circle(image_with_triangles_and_waypoints, tuple(waypoint), 3, (0, 0, 255), -1)
-
-            # Display coordinates of the waypoint
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.35
-            font_color = (212, 103, 113)
-            line_type = 1
-            cv2.putText(image_with_triangles_and_waypoints, f"({waypoint[0]}, {waypoint[1]})",
-                        (waypoint[0] + 5, waypoint[1] - 5), font, font_scale, font_color, line_type)
+            cv2.putText(image_with_triangles_and_waypoints, f"({waypoint[0]}, {waypoint[1]})", (waypoint[0] + 5, waypoint[1] - 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35, (212, 103, 113), 1)
 
         # Display the image with the triangles, waypoints, and coordinates
         cv2.imshow('Triangles with Waypoints and Coordinates', image_with_triangles_and_waypoints)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
-    def calculateWaypoints(self, triangles, points):
-        waypoints = []
-
-        # Calculate the centroid of each triangle
-        for triangle_indices in triangles:
-            # Get the vertices of the triangle
-            triangle_vertices = points[triangle_indices]
-
-            # Calculate the centroid
-            centroid = np.mean(triangle_vertices, axis=0, dtype=np.int32)
-
-            # Append the centroid to the list of waypoints
-            waypoints.append(centroid)
-
-        return waypoints
 
     def createWaypointGraph(self, waypoints):
         # Create an empty undirected graph
@@ -112,36 +78,30 @@ class MapProcessing:
         return G
 
     def visualizeWaypointGraph(self, mapImage, G):
-        # Create a blank image with the same size as the original map image
-        map_with_graph = mapImage.copy()
-
-        # Draw the graph on the image
         pos = nx.get_node_attributes(G, 'pos')
-        nx.draw(G, pos, node_size=10, node_color='r', with_labels=False, ax=plt.gca())
+        map_with_graph = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
 
-        # Display the image with the graph
-        plt.imshow(map_with_graph, cmap='gray')
+        nx.draw(G, pos, node_size=10, node_color='r', with_labels=False)
+        plt.imshow(map_with_graph)
         plt.show()
 
     def visualizeWalls(self, image, polygons):
-        # Create a copy of the image to draw the walls on
         image_with_walls = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-
-        # Draw each polygon (wall) on the image in blue color
         for polygon in polygons:
             cv2.polylines(image_with_walls, [polygon], True, (255, 0, 0), thickness=2)
-
-        # Display the image with the walls
         cv2.imshow('Walls', image_with_walls)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
     def exportWaypointsToCSV(self, waypoints, filename='waypoints.csv'):
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['Waypoint Index', 'X', 'Y'])
-            for index, waypoint in enumerate(waypoints):
-                writer.writerow([index, waypoint[0], waypoint[1]])
+        try:
+            with open(filename, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Waypoint Index', 'X', 'Y'])
+                for index, waypoint in enumerate(waypoints):
+                    writer.writerow([index, waypoint[0], waypoint[1]])
+        except IOError as e:
+            print(f"Error writing to file {filename}: {e}")
 
 # Load the PGM file
 mapImage = cv2.imread('ros2_maps/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
@@ -158,10 +118,6 @@ waypoints = mapProcessing.calculateWaypoints(triangles, all_points)
 
 # Visualize the triangles with waypoints and coordinates
 mapProcessing.visualizeTriangles(mapImage, triangles, all_points, waypoints)
-
-# Display and access the calculated waypoints
-for index, waypoint in enumerate(waypoints):
-    print("Waypoint", index, ":", waypoint)
 
 # Create the waypoint graph
 G = mapProcessing.createWaypointGraph(waypoints)

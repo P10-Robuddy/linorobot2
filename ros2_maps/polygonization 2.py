@@ -3,7 +3,6 @@ import cv2
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
-import csv
 
 class MapProcessing:
 
@@ -88,7 +87,7 @@ class MapProcessing:
 
         return waypoints
 
-    def createWaypointGraph(self, waypoints):
+    def createWaypointGraph(self, waypoints, polygons):
         # Create an empty undirected graph
         G = nx.Graph()
 
@@ -96,52 +95,52 @@ class MapProcessing:
         for index, waypoint in enumerate(waypoints):
             G.add_node(index, pos=waypoint)  # Store position as node attribute
 
-        # Add edges (connections between waypoints) to the graph
-        # You can define edges based on your navigation requirements.
-        # For example, you might connect each waypoint to its neighboring waypoints.
-        # Here's a simple example connecting each waypoint to its two nearest neighbors:
-        for i in range(len(waypoints)):
-            # Find indices of two nearest neighbors
-            neighbor_indices = [idx for idx in range(len(waypoints)) if idx != i]
-            nearest_neighbors = sorted(neighbor_indices, key=lambda idx: np.linalg.norm(np.array(waypoints[idx]) - np.array(waypoints[i])))[:2]
+        # Function to check if a line segment intersects with any polygon
+        def intersects_with_polygon(p1, p2):
+            for polygon in polygons:
+                for i in range(len(polygon)):
+                    p3 = polygon[i][0]
+                    p4 = polygon[(i + 1) % len(polygon)][0]
+                    # Check if the line segment intersects with any edge of the polygon
+                    if segments_intersect(p1, p2, p3, p4):
+                        return True
+            return False
 
-            # Add edges between the waypoint and its two nearest neighbors
-            G.add_edge(i, nearest_neighbors[0])
-            G.add_edge(i, nearest_neighbors[1])
+        # Function to check if two line segments intersect
+        def segments_intersect(p1, p2, p3, p4):
+            def ccw(A, B, C):
+                return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+
+            return ccw(p1, p3, p4) != ccw(p2, p3, p4) and ccw(p1, p2, p3) != ccw(p1, p2, p4)
+
+        # Calculate pairwise distances between waypoints
+        distances = np.linalg.norm(np.array(waypoints)[:, None] - np.array(waypoints)[None, :], axis=-1)
+        max_distance = 150  # Adjust this value based on your map scale and waypoint distribution
+        # Add edges (connections between waypoints) to the graph, avoiding walls
+        for i, waypoint_i in enumerate(waypoints):
+            for j, waypoint_j in enumerate(waypoints):
+                if i != j and not intersects_with_polygon(waypoint_i, waypoint_j) and distances[i][j] < max_distance:
+                    G.add_edge(i, j)
 
         return G
 
-    def visualizeWaypointGraph(self, mapImage, G):
+
+    def drawWaypointGraph(self, G, mapImage):
         # Create a blank image with the same size as the original map image
-        map_with_graph = mapImage.copy()
+        map_with_graph = np.ones((mapImage.shape[0], mapImage.shape[1], 3), dtype=np.uint8) * 255
 
         # Draw the graph on the image
         pos = nx.get_node_attributes(G, 'pos')
-        nx.draw(G, pos, node_size=10, node_color='r', with_labels=False, ax=plt.gca())
+        nx.draw(G, pos, node_size=10, node_color='r', with_labels=False)
 
         # Display the image with the graph
         plt.imshow(map_with_graph, cmap='gray')
+
+        # Overlay the original map image
+        plt.imshow(mapImage, alpha=0.5, cmap='gray')
         plt.show()
 
-    def visualizeWalls(self, image, polygons):
-        # Create a copy of the image to draw the walls on
-        image_with_walls = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
-        # Draw each polygon (wall) on the image in blue color
-        for polygon in polygons:
-            cv2.polylines(image_with_walls, [polygon], True, (255, 0, 0), thickness=2)
-
-        # Display the image with the walls
-        cv2.imshow('Walls', image_with_walls)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-    def exportWaypointsToCSV(self, waypoints, filename='waypoints.csv'):
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['Waypoint Index', 'X', 'Y'])
-            for index, waypoint in enumerate(waypoints):
-                writer.writerow([index, waypoint[0], waypoint[1]])
 
 # Load the PGM file
 mapImage = cv2.imread('ros2_maps/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
@@ -164,13 +163,7 @@ for index, waypoint in enumerate(waypoints):
     print("Waypoint", index, ":", waypoint)
 
 # Create the waypoint graph
-G = mapProcessing.createWaypointGraph(waypoints)
+G = mapProcessing.createWaypointGraph(waypoints, polygons)
 
-# Visualize the waypoint graph
-mapProcessing.visualizeWaypointGraph(mapImage, G)
-
-# Visualize the walls
-mapProcessing.visualizeWalls(mapImage, polygons)
-
-# # Export waypoints to CSV
-# mapProcessing.exportWaypointsToCSV(waypoints, 'waypoints.csv')
+# Draw the waypoint graph
+mapProcessing.drawWaypointGraph(G, mapImage)
