@@ -144,7 +144,7 @@ class MapProcessing:
                 writer.writerow([index, waypoint[0], waypoint[1]])
 
 # Load the PGM file
-mapImage = cv2.imread('ros2_maps/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
+mapImage = cv2.imread('linorobot2_gazebo/worlds/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
 
 # Polygonize the image
 mapProcessing = MapProcessing()
