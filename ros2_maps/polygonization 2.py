@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+from networkx.algorithms.approximation import traveling_salesman_problem
+from networkx.algorithms.approximation import christofides
 import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
@@ -131,19 +133,27 @@ class MapProcessing:
     def createWaypointGraph(self, waypoints, polygons):
         """
         This function creates a graph where nodes are waypoints and edges represent possible paths between waypoints that do not intersect polygons.
+        Waypoints outside the polygons are removed from the graph.
 
         Parameters:
         - waypoints: Centroids of the triangles.
-        - polygons: List of polygons.
+        - polygons: List of polygons for the walls.
 
         Returns:
         - Graph with waypoints as nodes and valid paths as edges.
         """
-
         G = nx.Graph()
 
+        # Remove waypoints outside polygons
+        waypoints_inside_polygons = []
+        for waypoint in waypoints:
+            # Convert the waypoint to tuple of integers
+            waypoint_tuple = tuple(map(int, waypoint))
+            if any(cv2.pointPolygonTest(polygon, waypoint_tuple, False) >= 0 for polygon in polygons):
+                waypoints_inside_polygons.append(waypoint_tuple)
+
         # Add nodes (waypoints) to the graph
-        for index, waypoint in enumerate(waypoints):
+        for index, waypoint in enumerate(waypoints_inside_polygons):
             G.add_node(index, pos=waypoint)  # Store position as node attribute
 
         # Function to check if a line segment intersects with any polygon
@@ -164,15 +174,42 @@ class MapProcessing:
 
             return ccw(p1, p3, p4) != ccw(p2, p3, p4) and ccw(p1, p2, p3) != ccw(p1, p2, p4)
 
-        # Calculate pairwise distances between waypoints
-        distances = np.linalg.norm(np.array(waypoints)[:, None] - np.array(waypoints)[None, :], axis=-1)
-        max_distance = 150  # Adjust this value based on your map scale and waypoint distribution
-        # Add edges (connections between waypoints) to the graph, avoiding walls
-        for i, waypoint_i in enumerate(waypoints):
-            for j, waypoint_j in enumerate(waypoints):
-                if i != j and not intersects_with_polygon(waypoint_i, waypoint_j) and distances[i][j] < max_distance:
-                    G.add_edge(i, j)
+        discarded_edges = []
 
+        # Add edges based on nearest neighbors, avoiding walls
+        for i in range(len(waypoints_inside_polygons)):
+            # Find indices of two nearest neighbors
+            neighbor_indices = [idx for idx in range(len(waypoints_inside_polygons)) if idx != i]
+            nearest_neighbors = sorted(neighbor_indices, key=lambda idx: np.linalg.norm(np.array(waypoints_inside_polygons[idx]) - np.array(waypoints_inside_polygons[i])))[:2]
+
+            for neighbor in nearest_neighbors:
+                if not intersects_with_polygon(waypoints_inside_polygons[i], waypoints_inside_polygons[neighbor]):
+                    G.add_edge(i, neighbor)
+                else:
+                    discarded_edges.append((i, neighbor))
+                    print(f"Edge ({i}, {neighbor}) intersects with a polygon and is not added.")
+
+        # Find connected components (islands) in the graph
+        islands = list(nx.connected_components(G))
+        print("Discarded edges:", discarded_edges)
+
+        # If there are more than one island, connect them with a single edge using discarded edges
+        if len(islands) > 1:
+            print("Islands:", islands)
+            for edge in discarded_edges:
+                island1, island2 = None, None
+                for island in islands:
+                    if edge[0] in island:
+                        island1 = island
+                    if edge[1] in island:
+                        island2 = island
+                if island1 and island2:
+                    G.add_edge(edge[0], edge[1])
+                    print(f"Connecting islands with edge {edge}")
+                    break
+
+        islands = list(nx.connected_components(G))
+        print("Islands:", islands)
         return G
 
     def visualizeWaypointGraph(self, mapImage, Graph):
@@ -193,6 +230,53 @@ class MapProcessing:
         plt.imshow(map_with_graph)
         plt.show()
 
+    def partitionGraph(self, G, num_divisions):
+        """
+        This function partitions the graph into n sections and creates closed paths within those partitions
+        using the Christofides algorithm.
+
+        Parameters:
+        - G: Graph with waypoints as nodes and valid paths as edges.
+        - n: Number of sections to partition the graph into.
+
+        Returns:
+        - List of closed paths within each partition.
+        """
+        graph = nx.complete_graph(G)
+
+        # Get the number of vertices in the graph
+        num_vertices = graph.number_of_nodes()
+
+        # Calculate how many vertices each subgraph should have approximately
+        vertices_per_subgraph = num_vertices // num_divisions
+
+        # Initialize a list to store the paths
+        closed_paths = []
+
+        # Iterate over each division
+        for i in range(num_divisions):
+            # Determine the range of vertices for the current subgraph
+            start_vertex = i * vertices_per_subgraph
+            end_vertex = start_vertex + vertices_per_subgraph if i < num_divisions - 1 else num_vertices
+
+            # Extract the subgraph
+            subgraph_nodes = list(graph.nodes())[start_vertex:end_vertex]
+            subgraph = graph.subgraph(subgraph_nodes)
+
+            # Apply Christofides algorithm to find an approximate solution to the TSP for the subgraph
+            tsp_path = christofides(subgraph)
+
+            # Append the TSP path to the list of paths
+            closed_paths.append(tsp_path)
+
+        return closed_paths
+
+        # Apply Christofides algorithm to find an approximate solution to the TSP
+        graph = nx.complete_graph(G)
+        closed_paths = christofides(graph)
+
+        return closed_paths
+
     def visualizeWalls(self, image, polygons):
         """
         This function visualizes the detected walls (polygons) on the image.
@@ -201,11 +285,18 @@ class MapProcessing:
         - image: Input grayscale image.
         - polygons: List of polygons.
         """
+        # Convert the grayscale image to a color image
         image_with_walls = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
+        # Fill the polygons
         for polygon in polygons:
-            cv2.polylines(image_with_walls, [polygon], True, (255, 0, 0), thickness=2)
+            cv2.fillPoly(image_with_walls, [polygon], (255, 0, 0))
 
+        # Optionally, you can also draw the polygon outlines to make the edges more visible
+        for polygon in polygons:
+            cv2.polylines(image_with_walls, [polygon], True, (0, 255, 0), thickness=2)
+
+        # Display the image with the filled polygons
         cv2.imshow('Walls', image_with_walls)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -259,6 +350,10 @@ MP.visualizeWaypointGraph(mapImage, G)
 
 # Visualize the walls
 MP.visualizeWalls(mapImage, polygons)
+
+# Partition the graph into n sections and create closed paths within those partitions
+closed_paths = MP.partitionGraph(G, num_divisions=3)
+print("Closed paths:", closed_paths)
 
 # Export waypoints to CSV
 # mapProcessing.exportWaypointsToCSV(waypoints, filename='waypoints.csv')

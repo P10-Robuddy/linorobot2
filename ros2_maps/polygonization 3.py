@@ -4,7 +4,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
 import csv
-from shapely.geometry import LineString, Polygon
 
 class MapProcessing:
 
@@ -135,27 +134,31 @@ class MapProcessing:
 
         Parameters:
         - waypoints: Centroids of the triangles.
-        - polygons: List of polygons.
+        - polygons: List of polygons for the walls.
 
         Returns:
         - Graph with waypoints as nodes and valid paths as edges.
         """
 
+        # Create an empty undirected graph
         G = nx.Graph()
-        shapely_polygons = [Polygon(polygon[:, 0, :]) for polygon in polygons]
 
+        # Add nodes (waypoints) to the graph
         for index, waypoint in enumerate(waypoints):
-            G.add_node(index, pos=tuple(waypoint))
+            G.add_node(index, pos=waypoint)  # Store position as node attribute
 
+        # Add edges (connections between waypoints) to the graph
+        # You can define edges based on your navigation requirements.
+        # For example, you might connect each waypoint to its neighboring waypoints.
+        # Here's a simple example connecting each waypoint to its two nearest neighbors:
         for i in range(len(waypoints)):
-            for j in range(i + 1, len(waypoints)):
-                line = LineString([waypoints[i], waypoints[j]])
-                intersects = any(line.intersects(polygon) for polygon in shapely_polygons)
+            # Find indices of two nearest neighbors
+            neighbor_indices = [idx for idx in range(len(waypoints)) if idx != i]
+            nearest_neighbors = sorted(neighbor_indices, key=lambda idx: np.linalg.norm(np.array(waypoints[idx]) - np.array(waypoints[i])))[:2]
 
-                if not intersects:
-                    G.add_edge(i, j)
-                else:
-                    print(f"Edge ({i}, {j}) intersects with a polygon and is not added.")
+            # Add edges between the waypoint and its two nearest neighbors
+            G.add_edge(i, nearest_neighbors[0])
+            G.add_edge(i, nearest_neighbors[1])
 
         return G
 
