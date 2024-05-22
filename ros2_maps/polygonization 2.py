@@ -301,21 +301,34 @@ class MapProcessing:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def exportWaypointsToCSV(self, waypoints, filename='waypoints.csv'):
+    def exportWaypointsToCSV(self, waypoints, closed_paths, image_shape, filename='waypoints.csv'):
         """
-        This function exports the waypoints to a CSV file.
+        This function exports the waypoints and closed paths to a CSV file, with the origin shifted to the center of the image.
 
         Parameters:
         - waypoints: Centroids of the triangles.
+        - closed_paths: List of closed paths (each path is a list of waypoint indices).
+        - image_shape: Shape of the image (height, width).
         - filename: Name of the CSV file (default is 'waypoints.csv').
         """
+        height, width = image_shape
+        origin_shift = np.array([width // 2, height // 2])
+
         try:
             with open(filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(['Waypoint Index', 'X', 'Y'])
 
                 for index, waypoint in enumerate(waypoints):
-                    writer.writerow([index, waypoint[0], waypoint[1]])
+                    shifted_waypoint = waypoint - origin_shift
+                    writer.writerow([index, shifted_waypoint[0], shifted_waypoint[1]])
+
+                writer.writerow([])  # Empty row to separate waypoints and paths
+
+                writer.writerow(['Path Index', 'Waypoint Indices', 'Coordinates'])
+                for path_index, path in enumerate(closed_paths):
+                    path_waypoints = [waypoints[i] - origin_shift for i in path]
+                    writer.writerow([path_index, path, path_waypoints])
         except IOError as e:
             print(f"Error writing to file {filename}: {e}")
 
@@ -352,8 +365,25 @@ MP.visualizeWaypointGraph(mapImage, G)
 MP.visualizeWalls(mapImage, polygons)
 
 # Partition the graph into n sections and create closed paths within those partitions
-closed_paths = MP.partitionGraph(G, num_divisions=3)
+closed_paths = MP.partitionGraph(G, num_divisions=1)
 print("Closed paths:", closed_paths)
 
-# Export waypoints to CSV
-# mapProcessing.exportWaypointsToCSV(waypoints, filename='waypoints.csv')
+# print coordinates for waypoints in closed paths while writing which path it is in
+for i, path in enumerate(closed_paths):
+    print(f"Path {i}:")
+    for waypoint in path:
+        print(waypoints[waypoint])
+
+# Draw closed paths on the image
+image_with_paths = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
+for path in closed_paths:
+    path_points = [waypoints[i] for i in path]
+    cv2.polylines(image_with_paths, [np.array(path_points, np.int32)], False, (0, 0, 255), thickness=2)
+
+# Display the image with the closed paths
+cv2.imshow('Closed Paths', image_with_paths)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+# Export waypoints and closed paths to CSV
+MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, filename='waypoints.csv')
