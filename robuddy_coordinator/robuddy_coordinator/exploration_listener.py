@@ -10,7 +10,7 @@ class exploration_listener(Node):
 
     def __init__(self):
         super().__init__("coordination_listener")
-        self.subscriber = self.create_subscription(Bool, "exploration_listener", self.callback_exploration ,10) #todo, publisher topic name
+        self.subscriber = self.create_subscription(Bool, "exploration_listener", self.callback_exploration ,10)
         self.get_logger().info("Waiting for exploration to be finished")
 
     def callback_exploration(self, message):
