@@ -6,6 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay
 import csv
+import yaml
 
 class MapProcessing:
 
@@ -301,39 +302,58 @@ class MapProcessing:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    def exportWaypointsToCSV(self, waypoints, closed_paths, image_shape, filename='waypoints.csv'):
+    def readYaml(self, yaml_file):
         """
-        This function exports the waypoints and closed paths to a CSV file, with the origin shifted to the center of the image.
+        This function reads the YAML file and extracts the necessary information.
+
+        Parameters:
+        - yaml_file: Path to the YAML file.
+
+        Returns:
+        - Dictionary with image metadata.
+        """
+        with open(yaml_file, 'r') as file:
+            data = yaml.safe_load(file)
+        return data
+
+    def exportWaypointsToCSV(self, waypoints, closed_paths, image_shape, yaml_data, filename='waypoints.csv'):
+        """
+        This function exports the waypoints and closed paths to a CSV file, with coordinates adjusted based on the YAML file.
 
         Parameters:
         - waypoints: Centroids of the triangles.
         - closed_paths: List of closed paths (each path is a list of waypoint indices).
         - image_shape: Shape of the image (height, width).
+        - yaml_data: Metadata from the YAML file.
         - filename: Name of the CSV file (default is 'waypoints.csv').
         """
         height, width = image_shape
-        origin_shift = np.array([width // 2, height // 2])
+        resolution = yaml_data['resolution']
+        origin = np.array(yaml_data['origin'][:2])  # We only need the first two values (x and y)
 
         try:
             with open(filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Waypoint Index', 'X', 'Y'])
+                writer.writerow(['Waypoint Index', 'X (meters)', 'Y (meters)'])
 
                 for index, waypoint in enumerate(waypoints):
-                    shifted_waypoint = waypoint - origin_shift
+                    # Convert pixel coordinates to meters
+                    shifted_waypoint = waypoint * resolution + origin
                     writer.writerow([index, shifted_waypoint[0], shifted_waypoint[1]])
 
                 writer.writerow([])  # Empty row to separate waypoints and paths
 
-                writer.writerow(['Path Index', 'Waypoint Indices', 'Coordinates'])
+                writer.writerow(['Path Index', 'Waypoint Indices', 'Coordinates (meters)'])
                 for path_index, path in enumerate(closed_paths):
-                    path_waypoints = [waypoints[i] - origin_shift for i in path]
+                    path_waypoints = [waypoints[i] * resolution + origin for i in path]
                     writer.writerow([path_index, path, path_waypoints])
         except IOError as e:
             print(f"Error writing to file {filename}: {e}")
 
 # Load the PGM file
 mapImage = cv2.imread('linorobot2_gazebo/worlds/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
+
+# Load the YAML file
 
 # Polygonize the image
 MP = MapProcessing()
@@ -374,16 +394,6 @@ for i, path in enumerate(closed_paths):
     for waypoint in path:
         print(waypoints[waypoint])
 
-# Draw closed paths on the image
-image_with_paths = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
-for path in closed_paths:
-    path_points = [waypoints[i] for i in path]
-    cv2.polylines(image_with_paths, [np.array(path_points, np.int32)], False, (0, 0, 255), thickness=2)
-
-# Display the image with the closed paths
-cv2.imshow('Closed Paths', image_with_paths)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
 # Export waypoints and closed paths to CSV
-MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, filename='waypoints.csv')
+yaml_data = MP.readYaml('linorobot2_gazebo/worlds/fishbot room/room.yaml')
+MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
