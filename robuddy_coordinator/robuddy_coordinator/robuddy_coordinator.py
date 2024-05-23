@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool
+from std_msgs.msg import String
 import datetime
 import os
 import subprocess
@@ -15,10 +16,18 @@ import subprocess
 
 #Should the coordinator start an exploration?
 
+#step 1) create subscription to the exploration_listener topic
+# should i create a new publisher node exploration_publisher? that sends map path and status
+
 class robuddy_coordinator(Node):
     def __init__(self):
-        super().__init__('rb_coordinator')
+        super().__init__('robuddy_coordinator') #gives the node its name
         self.get_logger().info('Robuddy Coordinator Node has been started.')
+        self.subscriber = self.create_subscription(String, "robuddy_coordinator", self.callback_coordinator ,10)
+
+    def callback_coordinator(self, msg):
+            self.get_logger().info('Message recieved!: "%s"' % msg.data)
+
 
 def main(args=None):
     rclpy.init(args=args)

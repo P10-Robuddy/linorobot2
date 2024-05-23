@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool
+from std_msgs.msg import String
 import datetime
 import os
 import subprocess
@@ -12,6 +13,16 @@ class exploration_listener(Node):
         super().__init__("coordination_listener")
         self.subscriber = self.create_subscription(Bool, "exploration_listener", self.callback_exploration ,10)
         self.get_logger().info("Waiting for exploration to be finished")
+        #create publisher here, to publish to robuddy_coordinator
+        self.publisher = self.create_publisher(String, 'robuddy_coordinator', 10)
+        self.create_timer(5, self.timer_callback)
+
+    def timer_callback(self):
+        msg = String()
+        msg.data = "Hello world!"
+        self.publisher.publish(msg)
+        self.get_logger().info('Publishing: "%s"' % msg.data)
+   
 
     def callback_exploration(self, message):
         if message.data:
