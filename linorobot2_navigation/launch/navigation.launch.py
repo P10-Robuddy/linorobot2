@@ -67,7 +67,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             name='map',
             default_value=PathJoinSubstitution(
-                [FindPackageShare('linorobot2_navigation'), 'maps', 'C4.yaml']
+                [FindPackageShare("linorobot2_gazebo"), "worlds","fishbot room", "room.yaml"]
             ),
             description='Map yaml file'
         ),
