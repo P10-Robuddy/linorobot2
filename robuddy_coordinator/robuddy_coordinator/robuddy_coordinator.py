@@ -16,8 +16,9 @@ import subprocess
 
 #Should the coordinator start an exploration?
 
-#step 1) create subscription to the exploration_listener topic
-# should i create a new publisher node exploration_publisher? that sends map path and status
+#step 1) create publisher in the exploration_listener node
+
+#step 2) pseodo logic to start python scripts
 
 class robuddy_coordinator(Node):
     def __init__(self):
@@ -26,7 +27,8 @@ class robuddy_coordinator(Node):
         self.subscriber = self.create_subscription(String, "robuddy_coordinator", self.callback_coordinator ,10)
 
     def callback_coordinator(self, msg):
-            self.get_logger().info('Message recieved!: "%s"' % msg.data)
+        self.get_logger().info('Message recieved!: "%s"' % msg.data)
+        #start executing python scripts
 
 
 def main(args=None):
