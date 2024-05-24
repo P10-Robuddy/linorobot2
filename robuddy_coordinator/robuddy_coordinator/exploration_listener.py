@@ -23,14 +23,15 @@ class exploration_listener(Node):
             #create map and store location
             current_time = datetime.datetime.now().strftime("%d-%H-%M-%S")
             map_name = "generated_map" + current_time
-            map_filepath = os.path.join("/home/polybotdesktop/linorobot2_ws/src/linorobot2/linorobot2_navigation/maps/", map_name)
+            map_filepath = os.path.join("/home/polybotdesktop/linorobot2_ws/src/linorobot2/linorobot2_navigation/maps/generated_maps/", map_name)
             subprocess.run(['ros2', 'run', 'nav2_map_server', 'map_saver_cli', '-f', map_filepath, '--ros-args', '-p', 'save_map_timeout:=10000.'])
             self.get_logger().info("Map saved succesfully as: " + map_name)
             #todo, publish filepath to robuddy coordinator
-            msg = string()
+            self.get_logger().info("Saved file at: " + current_time)
+            msg = String()
             msg.data = map_filepath
-            self.publisher.publish(msg.data)
-            self.get_logger().info('Filepath: "%s"' % msg.data, 'Sent to robuddy coordinator')
+            self.publisher.publish(msg)
+            self.get_logger().info("Filepath: " +  msg.data + "Sent to robuddy coordinator")
 
         else:
             self.get_logger().info("Oh no, exploration no completo!")
@@ -41,7 +42,6 @@ def main(args=None):
     rclpy.init(args=args)
     node = exploration_listener()
     rclpy.spin(node)
-    rclpy.shutdown()
 
 if __name__ == "__main__":
     main()
