@@ -211,6 +211,15 @@ class MapProcessing:
 
         islands = list(nx.connected_components(G))
         print("Islands:", islands)
+
+        # If there are still islands, connect them with a single edge regardless of intersections
+        if len(islands) > 1:
+            print("Islands:", islands)
+            island1 = islands[0]
+            island2 = islands[1]
+            G.add_edge(next(iter(island1)), next(iter(island2)))
+            print(f"Connecting islands with edge ({next(iter(island1))}, {next(iter(island2))})")
+
         return G
 
     def visualizeWaypointGraph(self, mapImage, Graph):
@@ -351,7 +360,7 @@ class MapProcessing:
             print(f"Error writing to file {filename}: {e}")
 
 # Load the PGM file
-mapImage = cv2.imread('linorobot2_gazebo/worlds/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
+mapImage = cv2.imread('ros2_maps/experimentMap4.pgm', cv2.IMREAD_GRAYSCALE)
 
 # Polygonize the image
 MP = MapProcessing()
@@ -393,7 +402,7 @@ for i, path in enumerate(closed_paths):
         print(waypoints[waypoint])
 
 # Load the YAML file
-yaml_data = MP.readYaml('linorobot2_gazebo/worlds/fishbot room/room.yaml')
+yaml_data = MP.readYaml('ros2_maps/experimentMap4.yaml')
 
 # Export waypoints and closed paths to CSV
 MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
