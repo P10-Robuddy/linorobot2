@@ -1,12 +1,14 @@
 import numpy as np
-import cv2
-from networkx.algorithms.approximation import traveling_salesman_problem
-from networkx.algorithms.approximation import christofides
 import networkx as nx
+from networkx.algorithms.approximation import traveling_salesman_problem
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from scipy.spatial import Delaunay
+import cv2
 import csv
 import yaml
+from networkx.algorithms.community import girvan_newman
+from itertools import islice
 
 class MapProcessing:
 
@@ -131,6 +133,9 @@ class MapProcessing:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+        # Save the image with the triangles, waypoints, and coordinates
+        cv2.imwrite('triangles_with_waypoints.png', image_with_triangles_and_waypoints)
+
     def createWaypointGraph(self, waypoints, polygons):
         """
         This function creates a graph where nodes are waypoints and edges represent possible paths between waypoints that do not intersect polygons.
@@ -143,6 +148,7 @@ class MapProcessing:
         Returns:
         - Graph with waypoints as nodes and valid paths as edges.
         """
+
         G = nx.Graph()
 
         # Remove waypoints outside polygons
@@ -231,61 +237,107 @@ class MapProcessing:
         - G: Graph with waypoints as nodes and valid paths as edges.
         """
 
-        pos = nx.get_node_attributes(G, 'pos')
+        # Convert the grayscale image to RGB
         map_with_graph = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
 
-        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False)
+        # Get node positions from the graph
+        pos = nx.get_node_attributes(Graph, 'pos')
 
-        # Display the image with the waypoint graph
-        plt.imshow(map_with_graph)
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+
+        # Display the image
+        ax.imshow(map_with_graph)
+
+        # Draw the graph on the axis
+        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False, ax=ax)
+
+        # Save the figure
+        plt.savefig('waypoint_graph.png')
+
+        # Optionally show the figure
         plt.show()
 
-    def partitionGraph(self, G, num_divisions):
+    def partitionGraph(self, Graph, num_divisions):
         """
-        This function partitions the graph into n sections and creates closed paths within those partitions
-        using the Christofides algorithm.
+        This function partitions the graph into `num_divisions` connected sections using the Girvan-Newman algorithm.
 
         Parameters:
-        - G: Graph with waypoints as nodes and valid paths as edges.
-        - n: Number of sections to partition the graph into.
+        - Graph: The input graph to be partitioned.
+        - num_divisions: The number of partitions to create.
 
         Returns:
-        - List of closed paths within each partition.
+        - List of subgraphs (each subgraph is a partition).
         """
-        graph = nx.complete_graph(G)
 
-        # Get the number of vertices in the graph
-        num_vertices = graph.number_of_nodes()
+        if num_divisions < 2:
+            return [Graph]
 
-        # Calculate how many vertices each subgraph should have approximately
-        vertices_per_subgraph = num_vertices // num_divisions
+        # Use the Girvan-Newman algorithm to find communities
+        communities_generator = nx.algorithms.community.girvan_newman(Graph)
+        limited_communities = list(islice(communities_generator, num_divisions - 1))
 
-        # Initialize a list to store the paths
+        # The last set of communities
+        partition = limited_communities[-1]
+
+        subgraphs = [Graph.subgraph(community).copy() for community in partition]
+
+        return subgraphs
+
+    def createClosedPaths(self, subgraphs):
+        """
+        This function creates closed paths for each subgraph using the Traveling Salesman Problem.
+
+        Parameters:
+        - subgraphs: List of subgraphs.
+
+        Returns:
+        - List of closed paths (each path is a list of nodes in the order they are visited).
+        """
+
         closed_paths = []
 
-        # Iterate over each division
-        for i in range(num_divisions):
-            # Determine the range of vertices for the current subgraph
-            start_vertex = i * vertices_per_subgraph
-            end_vertex = start_vertex + vertices_per_subgraph if i < num_divisions - 1 else num_vertices
-
-            # Extract the subgraph
-            subgraph_nodes = list(graph.nodes())[start_vertex:end_vertex]
-            subgraph = graph.subgraph(subgraph_nodes)
-
-            # Apply Christofides algorithm to find an approximate solution to the TSP for the subgraph
-            tsp_path = christofides(subgraph)
-
-            # Append the TSP path to the list of paths
+        for subgraph in subgraphs:
+            # Find the optimal path using TSP
+            tsp_path = traveling_salesman_problem(subgraph, cycle=True)
             closed_paths.append(tsp_path)
 
         return closed_paths
 
-        # Apply Christofides algorithm to find an approximate solution to the TSP
-        graph = nx.complete_graph(G)
-        closed_paths = christofides(graph)
+    def visualizeClosedPathsOnMap(self, mapImage, Graph, closed_paths):
+        """
+        Visualizes the closed paths on the map image.
 
-        return closed_paths
+        Parameters:
+        - mapImage: Input grayscale image.
+        - Graph: The original graph with waypoints.
+        - closed_paths: List of closed paths (each path is a list of nodes).
+        """
+
+        # Convert the grayscale image to RGB
+        map_with_paths = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
+
+        # Get node positions from the graph
+        pos = nx.get_node_attributes(Graph, 'pos')
+        colors = cm.rainbow(np.linspace(0, 1, len(closed_paths)))
+
+        for i, path in enumerate(closed_paths):
+            path_color = tuple([int(c * 255) for c in colors[i][:3]])
+            # Draw the closed path
+            for j in range(len(path)):
+                p1 = pos[path[j]]
+                p2 = pos[path[(j + 1) % len(path)]]
+                cv2.line(map_with_paths, p1, p2, path_color, 2)
+                # Optionally draw waypoints
+                cv2.circle(map_with_paths, p1, 5, (0, 0, 255), -1)
+
+        # Display the image with closed paths
+        cv2.imshow('Closed Paths on Map', map_with_paths)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+        # Save the image with closed paths
+        cv2.imwrite('closed_paths_on_map.png', map_with_paths)
 
     def visualizeWalls(self, image, polygons):
         """
@@ -295,6 +347,7 @@ class MapProcessing:
         - image: Input grayscale image.
         - polygons: List of polygons.
         """
+
         # Convert the grayscale image to a color image
         image_with_walls = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
@@ -311,6 +364,9 @@ class MapProcessing:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+        # Save the image with the filled polygons
+        cv2.imwrite('walls.png', image_with_walls)
+
     def readYaml(self, yaml_file):
         """
         This function reads the YAML file and extracts the necessary information.
@@ -321,6 +377,7 @@ class MapProcessing:
         Returns:
         - Dictionary with image metadata.
         """
+
         with open(yaml_file, 'r') as file:
             data = yaml.safe_load(file)
         return data
@@ -336,6 +393,7 @@ class MapProcessing:
         - yaml_data: Metadata from the YAML file.
         - filename: Name of the CSV file (default is 'waypoints.csv').
         """
+
         height, width = image_shape
         resolution = yaml_data['resolution']
         origin = np.array(yaml_data['origin'][:2])  # We only need the first two values (x and y)
@@ -343,24 +401,20 @@ class MapProcessing:
         try:
             with open(filename, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Waypoint Index', 'X (meters)', 'Y (meters)'])
+                writer.writerow(['Waypoint Index', 'X (meters)', 'Y (meters)', 'Path Index'])
 
-                for index, waypoint in enumerate(waypoints):
-                    # Convert pixel coordinates to meters
-                    shifted_waypoint = waypoint * resolution + origin
-                    writer.writerow([index, shifted_waypoint[0], shifted_waypoint[1]])
-
-                writer.writerow([])  # Empty row to separate waypoints and paths
-
-                writer.writerow(['Path Index', 'Waypoint Indices', 'Coordinates (meters)'])
                 for path_index, path in enumerate(closed_paths):
-                    path_waypoints = [waypoints[i] * resolution + origin for i in path]
-                    writer.writerow([path_index, path, path_waypoints])
+                    # Write waypoints for each path
+                    for waypoint_index in path:
+                        # Convert pixel coordinates to meters
+                        shifted_waypoint = waypoints[waypoint_index] * resolution + origin
+                        writer.writerow([waypoint_index, shifted_waypoint[0], shifted_waypoint[1], path_index])
+
         except IOError as e:
             print(f"Error writing to file {filename}: {e}")
 
 # Load the PGM file
-mapImage = cv2.imread('ros2_maps/experimentMap4.pgm', cv2.IMREAD_GRAYSCALE)
+mapImage = cv2.imread('linorobot2_gazebo/worlds/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
 
 # Polygonize the image
 MP = MapProcessing()
@@ -385,6 +439,10 @@ MP.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 # Create the waypoint graph
 G = MP.createWaypointGraph(waypoints, polygons)
 
+# Is there any vertex in the graph that is not connected to any other vertex?
+isolated_vertices = [node for node, degree in G.degree if degree == 0]
+print("Isolated vertices:", isolated_vertices)
+
 # Visualize the waypoint graph
 MP.visualizeWaypointGraph(mapImage, G)
 
@@ -392,17 +450,21 @@ MP.visualizeWaypointGraph(mapImage, G)
 MP.visualizeWalls(mapImage, polygons)
 
 # Partition the graph into n sections and create closed paths within those partitions
-closed_paths = MP.partitionGraph(G, num_divisions=1)
-print("Closed paths:", closed_paths)
+num_partitions = 3
+partitions = MP.partitionGraph(G, num_partitions)
 
-# print coordinates for waypoints in closed paths while writing which path it is in
+# Create closed paths for each subgraph
+closed_paths = MP.createClosedPaths(partitions)
+
+# Print closed paths for verification
 for i, path in enumerate(closed_paths):
-    print(f"Path {i}:")
-    for waypoint in path:
-        print(waypoints[waypoint])
+    print(f"Closed Path for Subgraph {i+1}: {path}")
+
+# Visualize the closed paths on the map image
+MP.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
 # Load the YAML file
-yaml_data = MP.readYaml('ros2_maps/experimentMap4.yaml')
+yaml_data = MP.readYaml('linorobot2_gazebo/worlds/fishbot room/room.yaml')
 
 # Export waypoints and closed paths to CSV
 MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')

@@ -2,3 +2,8 @@ log
 build
 install
 *.json
+closed_paths_on_map.png
+triangles_with_waypoints.png
+waypoint_graph.png
+walls.png
+waypoints.csv
