@@ -64,6 +64,11 @@ def generate_launch_description():
                     default_value='false',
                     description='Enable use_sime_time to true'
                 ),
+                DeclareLaunchArgument(
+                    name='map_mode',
+                    default_value='mapping',
+                    description='Set the mode of the slam node to be mapping or localization'
+                ),
 
                 DeclareLaunchArgument(
                     name='rviz',
@@ -75,7 +80,8 @@ def generate_launch_description():
                     Node(
                         parameters=[
                             slam_config,
-                            {'use_sim_time': LaunchConfiguration("sim")}
+                            {'use_sim_time': LaunchConfiguration('sim'),
+                            'mode': LaunchConfiguration('map_mode')}
                         ],
                         package='slam_toolbox',
                         executable='async_slam_toolbox_node',
@@ -95,6 +101,11 @@ def generate_launch_description():
                 default_value='false',
                 description='Enable use_sime_time to true'
             ),
+            DeclareLaunchArgument(
+                    name='map_mode',
+                    default_value='mapping',
+                    description='Set the mode of the slam node to be mapping or localization'
+                ),
 
             DeclareLaunchArgument(
                 name='rviz',
@@ -104,7 +115,8 @@ def generate_launch_description():
             Node(
                 parameters=[
                     slam_config,
-                    {'use_sim_time': LaunchConfiguration("sim")}
+                    {'use_sim_time': LaunchConfiguration("sim"),
+                    'mode': LaunchConfiguration("map_mode")}
                 ],
                 package='slam_toolbox',
                 executable='async_slam_toolbox_node',

@@ -7,3 +7,5 @@ triangles_with_waypoints.png
 waypoint_graph.png
 walls.png
 waypoints.csv
+robuddy_coordinator/robuddy_coordinator/generated_files/*
+linorobot2_navigation/maps/generated_maps/*

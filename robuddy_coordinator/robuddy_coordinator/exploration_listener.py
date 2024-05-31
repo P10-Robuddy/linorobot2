@@ -6,24 +6,31 @@ import datetime
 import os
 import subprocess
 
+start_time = datetime.datetime.now()
 
 class exploration_listener(Node):
 
     def __init__(self):
-        super().__init__("coordination_listener")
+        super().__init__("exploration_listener")
         self.subscriber = self.create_subscription(Bool, "exploration_listener", self.callback_exploration ,10)
         self.get_logger().info("Waiting for exploration to be finished")
         #create publisher here, to publish to robuddy_coordinator
-        self.publisher = self.create_publisher(String, 'robuddy_coordinator', 10)
+        self.publisher = self.create_publisher(String, 'map_polygonization', 10)
    
 
     def callback_exploration(self, message):
         if message.data:
             self.get_logger().info("Exploration is completed! Map processing is initialized")
-            #create map and store location
+            
             current_time = datetime.datetime.now().strftime("%d-%H-%M-%S")
+            end_time = datetime.datetime.now()
+            minutes, seconds = divmod((end_time-start_time).total_seconds(), 60)
+            self.get_logger().info(str(minutes) + "minutes" + str(seconds) + "second(s)")
+
+
+            #create map and store location
             map_name = "generated_map" + current_time
-            map_filepath = os.path.join("/home/polybotdesktop/linorobot2_ws/src/linorobot2/linorobot2_navigation/maps/generated_maps/", map_name)
+            map_filepath = os.path.join("/home/polybotdesktop/linorobot2_ws/src/linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files", map_name)
             subprocess.run(['ros2', 'run', 'nav2_map_server', 'map_saver_cli', '-f', map_filepath, '--ros-args', '-p', 'save_map_timeout:=10000.'])
             self.get_logger().info("Map saved succesfully as: " + map_name)
             #todo, publish filepath to robuddy coordinator
@@ -34,7 +41,8 @@ class exploration_listener(Node):
             self.get_logger().info("Filepath: " +  msg.data + "Sent to robuddy coordinator")
 
         else:
-            self.get_logger().info("Oh no, exploration no completo!")
+            startTime = datetime.datetime.now()
+            self.get_logger().info("Exploration started")
 
 
 

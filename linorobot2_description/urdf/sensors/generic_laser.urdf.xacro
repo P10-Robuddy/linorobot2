@@ -6,8 +6,8 @@
     <xacro:laser
       update_rate="40"
       ray_count="720"
-      min_angle="-1.570796"
-      max_angle="1.570796"
+      min_angle="-2.35619"
+      max_angle="2.35619"
       min_range="0.48"
       max_range="12.0"
       frame_id="laser"
