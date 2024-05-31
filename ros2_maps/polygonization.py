@@ -2,8 +2,12 @@ import numpy as np
 import cv2
 from networkx.algorithms.approximation import traveling_salesman_problem
 from networkx.algorithms.approximation import christofides
+import networkx.algorithms.community as nx_comm
+from networkx.algorithms.shortest_paths.generic import shortest_path_length
 import networkx as nx
+from networkx.algorithms import approximation as nx_approx
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from scipy.spatial import Delaunay
 import csv
 import yaml
@@ -131,6 +135,9 @@ class MapProcessing:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+        # Save the image with the triangles, waypoints, and coordinates
+        cv2.imwrite('triangles_with_waypoints.png', image_with_triangles_and_waypoints)
+
     def createWaypointGraph(self, waypoints, polygons):
         """
         This function creates a graph where nodes are waypoints and edges represent possible paths between waypoints that do not intersect polygons.
@@ -222,59 +229,104 @@ class MapProcessing:
         - G: Graph with waypoints as nodes and valid paths as edges.
         """
 
-        pos = nx.get_node_attributes(G, 'pos')
+        # Convert the grayscale image to RGB
         map_with_graph = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
 
-        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False)
+        # Get node positions from the graph
+        pos = nx.get_node_attributes(Graph, 'pos')
 
-        # Display the image with the waypoint graph
-        plt.imshow(map_with_graph)
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+
+        # Display the image
+        ax.imshow(map_with_graph)
+
+        # Draw the graph on the axis
+        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False, ax=ax)
+
+        # Save the figure
+        plt.savefig('waypoint_graph.png')
+
+        # Optionally show the figure
         plt.show()
+
+    # def partitionGraph(self, G, num_divisions):
+    #     """
+    #     This function partitions the graph into n sections and creates closed paths within those partitions
+    #     using the Christofides algorithm.
+
+    #     Parameters:
+    #     - G: Graph with waypoints as nodes and valid paths as edges.
+    #     - n: Number of sections to partition the graph into.
+
+    #     Returns:
+    #     - List of closed paths within each partition.
+    #     """
+    #     graph = nx.complete_graph(G)
+
+    #     # Get the number of vertices in the graph
+    #     num_vertices = graph.number_of_nodes()
+
+    #     # Calculate how many vertices each subgraph should have approximately
+    #     vertices_per_subgraph = num_vertices // num_divisions
+
+    #     # Initialize a list to store the paths
+    #     closed_paths = []
+
+    #     # Iterate over each division
+    #     for i in range(num_divisions):
+    #         # Determine the range of vertices for the current subgraph
+    #         start_vertex = i * vertices_per_subgraph
+    #         end_vertex = start_vertex + vertices_per_subgraph if i < num_divisions - 1 else num_vertices
+
+    #         # Extract the subgraph
+    #         subgraph_nodes = list(graph.nodes())[start_vertex:end_vertex]
+    #         subgraph = graph.subgraph(subgraph_nodes)
+
+    #         # Apply Christofides algorithm to find an approximate solution to the TSP for the subgraph
+    #         tsp_path = christofides(subgraph)
+
+    #         # Append the TSP path to the list of paths
+    #         closed_paths.append(tsp_path)
+
+    #     return closed_paths
 
     def partitionGraph(self, G, num_divisions):
         """
-        This function partitions the graph into n sections and creates closed paths within those partitions
-        using the Christofides algorithm.
+        This function partitions the graph into roughly `num_divisions` sections and creates closed paths within those partitions.
 
         Parameters:
         - G: Graph with waypoints as nodes and valid paths as edges.
-        - n: Number of sections to partition the graph into.
+        - num_divisions: Number of sections to partition the graph into.
 
         Returns:
         - List of closed paths within each partition.
         """
-        graph = nx.complete_graph(G)
+        # Find connected components (islands) in the graph
+        islands = list(nx.connected_components(G))
 
-        # Get the number of vertices in the graph
-        num_vertices = graph.number_of_nodes()
+        # Sort connected components based on their size
+        islands.sort(key=len)
 
-        # Calculate how many vertices each subgraph should have approximately
-        vertices_per_subgraph = num_vertices // num_divisions
+        # Combine smaller components until the desired number of divisions is reached
+        while len(islands) > num_divisions:
+            smallest_component = islands.pop(0)
+            second_smallest_component = islands.pop(0)
+            combined_component = smallest_component.union(second_smallest_component)
+            islands.append(combined_component)
 
-        # Initialize a list to store the paths
+        # Initialize list to store closed paths
         closed_paths = []
 
-        # Iterate over each division
-        for i in range(num_divisions):
-            # Determine the range of vertices for the current subgraph
-            start_vertex = i * vertices_per_subgraph
-            end_vertex = start_vertex + vertices_per_subgraph if i < num_divisions - 1 else num_vertices
+        for island in islands:
+            # Extract subgraph for the current island
+            subgraph = G.subgraph(island)
 
-            # Extract the subgraph
-            subgraph_nodes = list(graph.nodes())[start_vertex:end_vertex]
-            subgraph = graph.subgraph(subgraph_nodes)
+            # Find all simple cycles in the subgraph
+            cycles = nx.algorithms.cycles.simple_cycles(subgraph)
 
-            # Apply Christofides algorithm to find an approximate solution to the TSP for the subgraph
-            tsp_path = christofides(subgraph)
-
-            # Append the TSP path to the list of paths
-            closed_paths.append(tsp_path)
-
-        return closed_paths
-
-        # Apply Christofides algorithm to find an approximate solution to the TSP
-        graph = nx.complete_graph(G)
-        closed_paths = christofides(graph)
+            # Append cycles to the list of closed paths
+            closed_paths.extend(cycles)
 
         return closed_paths
 
@@ -301,6 +353,62 @@ class MapProcessing:
         cv2.imshow('Walls', image_with_walls)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+        # Save the image with the filled polygons
+        cv2.imwrite('walls.png', image_with_walls)
+
+    def visualizeClosedPaths(self, mapImage, Graph, closed_paths, waypoints):
+        """
+        This function visualizes the closed paths on the map image.
+
+        Parameters:
+        - mapImage: Input grayscale image.
+        - Graph: Graph with waypoints as nodes and valid paths as edges.
+        - closed_paths: List of closed paths (each path is a list of waypoint indices).
+        - waypoints: List of waypoint coordinates.
+        """
+        # Convert the grayscale image to RGB
+        map_with_paths = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
+
+        # Get node positions from the graph
+        pos = nx.get_node_attributes(Graph, 'pos')
+
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+
+        # Display the image
+        ax.imshow(map_with_paths)
+
+        # Draw the graph nodes on the axis
+        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False, ax=ax)
+
+        # Generate a colormap
+        colors = cm.get_cmap('tab10', len(closed_paths))
+
+        # Draw each closed path with a unique color
+        for i, path in enumerate(closed_paths):
+            color = colors(i)[:3]  # Get RGB color
+            color = tuple(int(c * 255) for c in color)  # Convert to 0-255 range
+
+            for j in range(len(path) - 1):
+                p1 = pos[path[j]]
+                p2 = pos[path[j + 1]]
+                cv2.line(map_with_paths, p1, p2, color, 2)
+
+            # Close the path
+            if len(path) > 1:
+                p1 = pos[path[-1]]
+                p2 = pos[path[0]]
+                cv2.line(map_with_paths, p1, p2, color, 2)
+
+        # Display the image with paths
+        ax.imshow(map_with_paths)
+
+        # Save the figure
+        plt.savefig('closed_paths.png')
+
+        # Optionally show the figure
+        plt.show()
 
     def readYaml(self, yaml_file):
         """
@@ -376,6 +484,10 @@ MP.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 # Create the waypoint graph
 G = MP.createWaypointGraph(waypoints, polygons)
 
+# Is there any vertex in the graph that is not connected to any other vertex?
+isolated_vertices = [node for node, degree in G.degree if degree == 0]
+print("Isolated vertices:", isolated_vertices)
+
 # Visualize the waypoint graph
 MP.visualizeWaypointGraph(mapImage, G)
 
@@ -397,3 +509,6 @@ yaml_data = MP.readYaml('linorobot2_gazebo/worlds/fishbot room/room.yaml')
 
 # Export waypoints and closed paths to CSV
 MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
+
+# Visualize the closed paths on the map
+MP.visualizeClosedPaths(mapImage, G, closed_paths, waypoints)
