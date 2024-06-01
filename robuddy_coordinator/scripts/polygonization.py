@@ -89,53 +89,6 @@ class MapProcessing:
 
         return waypoints
 
-    def visualizeTriangles(self, image, triangles, points, waypoints):
-        """
-        This function visualizes the Delaunay triangles and their waypoints on the image.
-
-        Parameters:
-        - image: Input grayscale image.
-        - triangles: Indices of the points forming triangles.
-        - points: Coordinates of the points.
-        - waypoints: Centroids of the triangles.
-        """
-
-        # Create a copy of the image to draw triangles, waypoints, and coordinates on
-        image_with_triangles_and_waypoints = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-
-        # Draw each triangle on the image
-        for triangle_indices in triangles:
-            triangle_vertices = points[triangle_indices]
-
-            # Draw the triangle
-            cv2.polylines(image_with_triangles_and_waypoints, [triangle_vertices], True, (0, 255, 0), thickness=2)
-
-        # Draw waypoints (centers of triangles) on the image and display coordinates
-        for waypoint in waypoints:
-            # Draw waypoint
-            cv2.circle(image_with_triangles_and_waypoints, tuple(waypoint), 3, (0, 0, 255), -1)
-
-            # Display coordinates of the waypoint
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.35
-            font_color = (212, 103, 113)
-            line_type = 1
-            cv2.putText(image_with_triangles_and_waypoints,
-                        f"({waypoint[0]}, {waypoint[1]})",
-                        (waypoint[0] + 5, waypoint[1] - 5),
-                        font,
-                        font_scale,
-                        font_color,
-                        line_type)
-
-        # Display the image with the triangles, waypoints, and coordinates
-        cv2.imshow('Triangles with Waypoints and Coordinates', image_with_triangles_and_waypoints)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-        # Save the image with the triangles, waypoints, and coordinates
-        cv2.imwrite('triangles_with_waypoints.png', image_with_triangles_and_waypoints)
-
     def createWaypointGraph(self, waypoints, polygons):
         """
         This function creates a graph where nodes are waypoints and edges represent possible paths between waypoints that do not intersect polygons.
@@ -218,45 +171,19 @@ class MapProcessing:
         islands = list(nx.connected_components(G))
         print("Islands:", islands)
 
-        # If there are still islands, connect them with a single edge regardless of intersections
-        if len(islands) > 1:
+        # If there are still islands, connect them with a single edge regardless of intersections using nearest neighbors
+        while len(islands) > 1:
             print("Islands:", islands)
             island1 = islands[0]
             island2 = islands[1]
-            G.add_edge(next(iter(island1)), next(iter(island2)))
-            print(f"Connecting islands with edge ({next(iter(island1))}, {next(iter(island2))})")
+            nearest_neighbors = [(i, np.linalg.norm(np.array(waypoints_inside_polygons[next(iter(island1))]) - np.array(waypoints_inside_polygons[i]))) for i in island2]
+            nearest_neighbors = sorted(nearest_neighbors, key=lambda x: x[1])
+            G.add_edge(next(iter(island1)), nearest_neighbors[0][0])
+            print(f"Connecting islands with edge ({next(iter(island1))}, {nearest_neighbors[0][0]})")
+
+            islands = list(nx.connected_components(G))
 
         return G
-
-    def visualizeWaypointGraph(self, mapImage, Graph):
-        """
-        This function visualizes the waypoint graph on the image.
-
-        Parameters:
-        - mapImage: Input grayscale image.
-        - G: Graph with waypoints as nodes and valid paths as edges.
-        """
-
-        # Convert the grayscale image to RGB
-        map_with_graph = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
-
-        # Get node positions from the graph
-        pos = nx.get_node_attributes(Graph, 'pos')
-
-        # Create a figure and axis
-        fig, ax = plt.subplots()
-
-        # Display the image
-        ax.imshow(map_with_graph)
-
-        # Draw the graph on the axis
-        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False, ax=ax)
-
-        # Save the figure
-        plt.savefig('waypoint_graph.png')
-
-        # Optionally show the figure
-        plt.show()
 
     def partitionGraph(self, Graph, num_divisions):
         """
@@ -303,6 +230,131 @@ class MapProcessing:
             closed_paths.append(tsp_path)
 
         return closed_paths
+
+    def readYaml(self, yaml_file):
+        """
+        This function reads the YAML file and extracts the necessary information.
+
+        Parameters:
+        - yaml_file: Path to the YAML file.
+
+        Returns:
+        - Dictionary with image metadata.
+        """
+
+        with open(yaml_file, 'r') as file:
+            data = yaml.safe_load(file)
+        return data
+
+    def exportWaypointsToCSV(self, waypoints, closed_paths, image_shape, yaml_data, filename='waypoints.csv'):
+        """
+        This function exports the waypoints and closed paths to a CSV file, with coordinates adjusted based on the YAML file.
+
+        Parameters:
+        - waypoints: Centroids of the triangles.
+        - closed_paths: List of closed paths (each path is a list of waypoint indices).
+        - image_shape: Shape of the image (height, width).
+        - yaml_data: Metadata from the YAML file.
+        - filename: Name of the CSV file (default is 'waypoints.csv').
+        """
+
+        height, width = image_shape
+        resolution = yaml_data['resolution']
+        origin = np.array(yaml_data['origin'][:2])  # We only need the first two values (x and y)
+
+        try:
+            with open(filename, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Waypoint Index', 'X (meters)', 'Y (meters)', 'Path Index'])
+
+                for path_index, path in enumerate(closed_paths):
+                    # Write waypoints for each path
+                    for waypoint_index in path:
+                        # Convert pixel coordinates to meters
+                        shifted_waypoint = waypoints[waypoint_index] * resolution + origin
+                        writer.writerow([waypoint_index, shifted_waypoint[0], shifted_waypoint[1], path_index])
+
+        except IOError as e:
+            print(f"Error writing to file {filename}: {e}")
+
+class MapVisualization:
+
+    def visualizeTriangles(self, image, triangles, points, waypoints):
+        """
+        This function visualizes the Delaunay triangles and their waypoints on the image.
+
+        Parameters:
+        - image: Input grayscale image.
+        - triangles: Indices of the points forming triangles.
+        - points: Coordinates of the points.
+        - waypoints: Centroids of the triangles.
+        """
+
+        # Create a copy of the image to draw triangles, waypoints, and coordinates on
+        image_with_triangles_and_waypoints = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+        # Draw each triangle on the image
+        for triangle_indices in triangles:
+            triangle_vertices = points[triangle_indices]
+
+            # Draw the triangle
+            cv2.polylines(image_with_triangles_and_waypoints, [triangle_vertices], True, (0, 255, 0), thickness=2)
+
+        # Draw waypoints (centers of triangles) on the image and display coordinates
+        for waypoint in waypoints:
+            # Draw waypoint
+            cv2.circle(image_with_triangles_and_waypoints, tuple(waypoint), 3, (0, 0, 255), -1)
+
+            # Display coordinates of the waypoint
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.35
+            font_color = (212, 103, 113)
+            line_type = 1
+            cv2.putText(image_with_triangles_and_waypoints,
+                        f"({waypoint[0]}, {waypoint[1]})",
+                        (waypoint[0] + 5, waypoint[1] - 5),
+                        font,
+                        font_scale,
+                        font_color,
+                        line_type)
+
+        # Display the image with the triangles, waypoints, and coordinates
+        cv2.imshow('Triangles with Waypoints and Coordinates', image_with_triangles_and_waypoints)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+        # Save the image with the triangles, waypoints, and coordinates
+        cv2.imwrite('triangles_with_waypoints.png', image_with_triangles_and_waypoints)
+
+    def visualizeWaypointGraph(self, mapImage, Graph):
+        """
+        This function visualizes the waypoint graph on the image.
+
+        Parameters:
+        - mapImage: Input grayscale image.
+        - G: Graph with waypoints as nodes and valid paths as edges.
+        """
+
+        # Convert the grayscale image to RGB
+        map_with_graph = cv2.cvtColor(mapImage, cv2.COLOR_GRAY2BGR)
+
+        # Get node positions from the graph
+        pos = nx.get_node_attributes(Graph, 'pos')
+
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+
+        # Display the image
+        ax.imshow(map_with_graph)
+
+        # Draw the graph on the axis
+        nx.draw(Graph, pos, node_size=10, node_color='r', with_labels=False, ax=ax)
+
+        # Save the figure
+        plt.savefig('waypoint_graph.png')
+
+        # Optionally show the figure
+        plt.show()
 
     def visualizeClosedPathsOnMap(self, mapImage, Graph, closed_paths):
         """
@@ -367,104 +419,60 @@ class MapProcessing:
         # Save the image with the filled polygons
         cv2.imwrite('walls.png', image_with_walls)
 
-    def readYaml(self, yaml_file):
-        """
-        This function reads the YAML file and extracts the necessary information.
 
-        Parameters:
-        - yaml_file: Path to the YAML file.
+# Load the PGM file
+mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
 
-        Returns:
-        - Dictionary with image metadata.
-        """
+# Polygonize the image
+MP = MapProcessing()
+polygons = MP.polygonizeImage(mapImage)
 
-        with open(yaml_file, 'r') as file:
-            data = yaml.safe_load(file)
-        return data
+for polygon in polygons:
+    print(f"Polygon: {polygon}")
 
-    def exportWaypointsToCSV(self, waypoints, closed_paths, image_shape, yaml_data, filename='waypoints.csv'):
-        """
-        This function exports the waypoints and closed paths to a CSV file, with coordinates adjusted based on the YAML file.
+# Triangulate the polygons
+triangles, all_points = MP.triangulatePolygons(polygons)
 
-        Parameters:
-        - waypoints: Centroids of the triangles.
-        - closed_paths: List of closed paths (each path is a list of waypoint indices).
-        - image_shape: Shape of the image (height, width).
-        - yaml_data: Metadata from the YAML file.
-        - filename: Name of the CSV file (default is 'waypoints.csv').
-        """
+# Calculate waypoints (centers of triangles)
+waypoints = MP.calculateWaypoints(triangles, all_points)
 
-        height, width = image_shape
-        resolution = yaml_data['resolution']
-        origin = np.array(yaml_data['origin'][:2])  # We only need the first two values (x and y)
+# Display and access the calculated waypoints
+for index, waypoint in enumerate(waypoints):
+    print("Waypoint", index, ":", waypoint)
 
-        try:
-            with open(filename, mode='w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(['Waypoint Index', 'X (meters)', 'Y (meters)', 'Path Index'])
+# Visualize the triangles with waypoints and coordinates
+MV = MapVisualization()
+MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 
-                for path_index, path in enumerate(closed_paths):
-                    # Write waypoints for each path
-                    for waypoint_index in path:
-                        # Convert pixel coordinates to meters
-                        shifted_waypoint = waypoints[waypoint_index] * resolution + origin
-                        writer.writerow([waypoint_index, shifted_waypoint[0], shifted_waypoint[1], path_index])
+# Create the waypoint graph
+G = MP.createWaypointGraph(waypoints, polygons)
 
-        except IOError as e:
-            print(f"Error writing to file {filename}: {e}")
+# Is there any vertex in the graph that is not connected to any other vertex?
+isolated_vertices = [node for node, degree in G.degree if degree == 0]
+print("Isolated vertices:", isolated_vertices)
 
-# # Load the PGM file
-# mapImage = cv2.imread('linorobot2_gazebo/worlds/fishbot room/room.pgm', cv2.IMREAD_GRAYSCALE)
+# Visualize the waypoint graph
+MV.visualizeWaypointGraph(mapImage, G)
 
-# # Polygonize the image
-# MP = MapProcessing()
-# polygons = MP.polygonizeImage(mapImage)
+# Visualize the walls
+MV.visualizeWalls(mapImage, polygons)
 
-# for polygon in polygons:
-#     print(f"Polygon: {polygon}")
+# Partition the graph into n sections and create closed paths within those partitions
+num_partitions = 1
+partitions = MP.partitionGraph(G, num_partitions)
 
-# # Triangulate the polygons
-# triangles, all_points = MP.triangulatePolygons(polygons)
+# Create closed paths for each subgraph
+closed_paths = MP.createClosedPaths(partitions)
 
-# # Calculate waypoints (centers of triangles)
-# waypoints = MP.calculateWaypoints(triangles, all_points)
+# Print closed paths for verification
+for i, path in enumerate(closed_paths):
+    print(f"Closed Path for Subgraph {i+1}: {path}")
 
-# # Display and access the calculated waypoints
-# for index, waypoint in enumerate(waypoints):
-#     print("Waypoint", index, ":", waypoint)
+# Visualize the closed paths on the map image
+MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
-# # Visualize the triangles with waypoints and coordinates
-# MP.visualizeTriangles(mapImage, triangles, all_points, waypoints)
+# Load the YAML file
+yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
 
-# # Create the waypoint graph
-# G = MP.createWaypointGraph(waypoints, polygons)
-
-# # Is there any vertex in the graph that is not connected to any other vertex?
-# isolated_vertices = [node for node, degree in G.degree if degree == 0]
-# print("Isolated vertices:", isolated_vertices)
-
-# # Visualize the waypoint graph
-# MP.visualizeWaypointGraph(mapImage, G)
-
-# # Visualize the walls
-# MP.visualizeWalls(mapImage, polygons)
-
-# # Partition the graph into n sections and create closed paths within those partitions
-# num_partitions = 1
-# partitions = MP.partitionGraph(G, num_partitions)
-
-# # Create closed paths for each subgraph
-# closed_paths = MP.createClosedPaths(partitions)
-
-# # Print closed paths for verification
-# for i, path in enumerate(closed_paths):
-#     print(f"Closed Path for Subgraph {i+1}: {path}")
-
-# # Visualize the closed paths on the map image
-# MP.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
-
-# # Load the YAML file
-# yaml_data = MP.readYaml('linorobot2_gazebo/worlds/fishbot room/room.yaml')
-
-# # Export waypoints and closed paths to CSV
-# MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
+# Export waypoints and closed paths to CSV
+MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')

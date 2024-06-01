@@ -9,3 +9,5 @@ walls.png
 waypoints.csv
 robuddy_coordinator/robuddy_coordinator/generated_files/*
 linorobot2_navigation/maps/generated_maps/*
+linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 bad.pgm
+linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm
