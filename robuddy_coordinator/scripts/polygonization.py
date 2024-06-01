@@ -420,59 +420,59 @@ class MapVisualization:
         cv2.imwrite('walls.png', image_with_walls)
 
 
-# Load the PGM file
-mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
+# # Load the PGM file
+# mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
 
-# Polygonize the image
-MP = MapProcessing()
-polygons = MP.polygonizeImage(mapImage)
+# # Polygonize the image
+# MP = MapProcessing()
+# polygons = MP.polygonizeImage(mapImage)
 
-for polygon in polygons:
-    print(f"Polygon: {polygon}")
+# for polygon in polygons:
+#     print(f"Polygon: {polygon}")
 
-# Triangulate the polygons
-triangles, all_points = MP.triangulatePolygons(polygons)
+# # Triangulate the polygons
+# triangles, all_points = MP.triangulatePolygons(polygons)
 
-# Calculate waypoints (centers of triangles)
-waypoints = MP.calculateWaypoints(triangles, all_points)
+# # Calculate waypoints (centers of triangles)
+# waypoints = MP.calculateWaypoints(triangles, all_points)
 
-# Display and access the calculated waypoints
-for index, waypoint in enumerate(waypoints):
-    print("Waypoint", index, ":", waypoint)
+# # Display and access the calculated waypoints
+# for index, waypoint in enumerate(waypoints):
+#     print("Waypoint", index, ":", waypoint)
 
-# Visualize the triangles with waypoints and coordinates
-MV = MapVisualization()
-MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
+# # Visualize the triangles with waypoints and coordinates
+# MV = MapVisualization()
+# MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 
-# Create the waypoint graph
-G = MP.createWaypointGraph(waypoints, polygons)
+# # Create the waypoint graph
+# G = MP.createWaypointGraph(waypoints, polygons)
 
-# Is there any vertex in the graph that is not connected to any other vertex?
-isolated_vertices = [node for node, degree in G.degree if degree == 0]
-print("Isolated vertices:", isolated_vertices)
+# # Is there any vertex in the graph that is not connected to any other vertex?
+# isolated_vertices = [node for node, degree in G.degree if degree == 0]
+# print("Isolated vertices:", isolated_vertices)
 
-# Visualize the waypoint graph
-MV.visualizeWaypointGraph(mapImage, G)
+# # Visualize the waypoint graph
+# MV.visualizeWaypointGraph(mapImage, G)
 
-# Visualize the walls
-MV.visualizeWalls(mapImage, polygons)
+# # Visualize the walls
+# MV.visualizeWalls(mapImage, polygons)
 
-# Partition the graph into n sections and create closed paths within those partitions
-num_partitions = 1
-partitions = MP.partitionGraph(G, num_partitions)
+# # Partition the graph into n sections and create closed paths within those partitions
+# num_partitions = 1
+# partitions = MP.partitionGraph(G, num_partitions)
 
-# Create closed paths for each subgraph
-closed_paths = MP.createClosedPaths(partitions)
+# # Create closed paths for each subgraph
+# closed_paths = MP.createClosedPaths(partitions)
 
-# Print closed paths for verification
-for i, path in enumerate(closed_paths):
-    print(f"Closed Path for Subgraph {i+1}: {path}")
+# # Print closed paths for verification
+# for i, path in enumerate(closed_paths):
+#     print(f"Closed Path for Subgraph {i+1}: {path}")
 
-# Visualize the closed paths on the map image
-MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
+# # Visualize the closed paths on the map image
+# MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
-# Load the YAML file
-yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
+# # Load the YAML file
+# yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
 
-# Export waypoints and closed paths to CSV
-MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
+# # Export waypoints and closed paths to CSV
+# MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
