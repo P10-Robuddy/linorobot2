@@ -489,5 +489,9 @@ MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 # Load the YAML file
 yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
 
+# Remove duplicates from closed paths
+closed_paths = [list(dict.fromkeys(path)) for path in closed_paths]
+print("Closed paths after removing duplicates:", closed_paths)
+
 # Export waypoints and closed paths to CSV
 MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
