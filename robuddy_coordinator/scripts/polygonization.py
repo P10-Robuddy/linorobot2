@@ -153,9 +153,11 @@ class MapProcessing:
         islands = list(nx.connected_components(G))
         print("Discarded edges:", discarded_edges)
 
-        # If there are more than one island, connect them with a single edge using discarded edges
+        # If there are more than one island, connect them with the closest discarded edge
         if len(islands) > 1:
             print("Islands:", islands)
+            closest_edge = None
+            min_distance = float('inf')
             for edge in discarded_edges:
                 island1, island2 = None, None
                 for island in islands:
@@ -164,26 +166,39 @@ class MapProcessing:
                     if edge[1] in island:
                         island2 = island
                 if island1 and island2:
-                    G.add_edge(edge[0], edge[1])
-                    print(f"Connecting islands with edge {edge}")
-                    break
+                    distance = np.linalg.norm(np.array(waypoints_inside_polygons[edge[0]]) - np.array(waypoints_inside_polygons[edge[1]]))
+                    if distance < min_distance:
+                        min_distance = distance
+                        closest_edge = edge
+            if closest_edge:
+                G.add_edge(closest_edge[0], closest_edge[1])
+                print(f"Connecting islands with edge {closest_edge}")
 
         islands = list(nx.connected_components(G))
         print("Islands:", islands)
 
-        # If there are still islands, connect them with a single edge regardless of intersections using nearest neighbors
+        # If there are still islands, connect the two closest islands using the shortest edge between them
         while len(islands) > 1:
             print("Islands:", islands)
-            island1 = islands[0]
-            island2 = islands[1]
-            nearest_neighbors = [(i, np.linalg.norm(np.array(waypoints_inside_polygons[next(iter(island1))]) - np.array(waypoints_inside_polygons[i]))) for i in island2]
-            nearest_neighbors = sorted(nearest_neighbors, key=lambda x: x[1])
-            G.add_edge(next(iter(island1)), nearest_neighbors[0][0])
-            print(f"Connecting islands with edge ({next(iter(island1))}, {nearest_neighbors[0][0]})")
+            closest_edge = None
+            min_distance = float('inf')
+            for island1 in islands:
+                for island2 in islands:
+                    if island1 != island2:
+                        for node1 in island1:
+                            for node2 in island2:
+                                distance = np.linalg.norm(np.array(waypoints_inside_polygons[node1]) - np.array(waypoints_inside_polygons[node2]))
+                                if distance < min_distance:
+                                    min_distance = distance
+                                    closest_edge = (node1, node2)
+            if closest_edge:
+                G.add_edge(closest_edge[0], closest_edge[1])
+                print(f"Connecting islands with edge {closest_edge}")
 
             islands = list(nx.connected_components(G))
 
         return G
+
 
     def partitionGraph(self, Graph, num_divisions):
         """
@@ -420,59 +435,59 @@ class MapVisualization:
         cv2.imwrite('walls.png', image_with_walls)
 
 
-# # Load the PGM file
-# mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
+# Load the PGM file
+mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
 
-# # Polygonize the image
-# MP = MapProcessing()
-# polygons = MP.polygonizeImage(mapImage)
+# Polygonize the image
+MP = MapProcessing()
+polygons = MP.polygonizeImage(mapImage)
 
-# for polygon in polygons:
-#     print(f"Polygon: {polygon}")
+for polygon in polygons:
+    print(f"Polygon: {polygon}")
 
-# # Triangulate the polygons
-# triangles, all_points = MP.triangulatePolygons(polygons)
+# Triangulate the polygons
+triangles, all_points = MP.triangulatePolygons(polygons)
 
-# # Calculate waypoints (centers of triangles)
-# waypoints = MP.calculateWaypoints(triangles, all_points)
+# Calculate waypoints (centers of triangles)
+waypoints = MP.calculateWaypoints(triangles, all_points)
 
-# # Display and access the calculated waypoints
-# for index, waypoint in enumerate(waypoints):
-#     print("Waypoint", index, ":", waypoint)
+# Display and access the calculated waypoints
+for index, waypoint in enumerate(waypoints):
+    print("Waypoint", index, ":", waypoint)
 
-# # Visualize the triangles with waypoints and coordinates
-# MV = MapVisualization()
-# MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
+# Visualize the triangles with waypoints and coordinates
+MV = MapVisualization()
+MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 
-# # Create the waypoint graph
-# G = MP.createWaypointGraph(waypoints, polygons)
+# Create the waypoint graph
+G = MP.createWaypointGraph(waypoints, polygons)
 
-# # Is there any vertex in the graph that is not connected to any other vertex?
-# isolated_vertices = [node for node, degree in G.degree if degree == 0]
-# print("Isolated vertices:", isolated_vertices)
+# Is there any vertex in the graph that is not connected to any other vertex?
+isolated_vertices = [node for node, degree in G.degree if degree == 0]
+print("Isolated vertices:", isolated_vertices)
 
-# # Visualize the waypoint graph
-# MV.visualizeWaypointGraph(mapImage, G)
+# Visualize the waypoint graph
+MV.visualizeWaypointGraph(mapImage, G)
 
-# # Visualize the walls
-# MV.visualizeWalls(mapImage, polygons)
+# Visualize the walls
+MV.visualizeWalls(mapImage, polygons)
 
-# # Partition the graph into n sections and create closed paths within those partitions
-# num_partitions = 1
-# partitions = MP.partitionGraph(G, num_partitions)
+# Partition the graph into n sections and create closed paths within those partitions
+num_partitions = 1
+partitions = MP.partitionGraph(G, num_partitions)
 
-# # Create closed paths for each subgraph
-# closed_paths = MP.createClosedPaths(partitions)
+# Create closed paths for each subgraph
+closed_paths = MP.createClosedPaths(partitions)
 
-# # Print closed paths for verification
-# for i, path in enumerate(closed_paths):
-#     print(f"Closed Path for Subgraph {i+1}: {path}")
+# Print closed paths for verification
+for i, path in enumerate(closed_paths):
+    print(f"Closed Path for Subgraph {i+1}: {path}")
 
-# # Visualize the closed paths on the map image
-# MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
+# Visualize the closed paths on the map image
+MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
-# # Load the YAML file
-# yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
+# Load the YAML file
+yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
 
-# # Export waypoints and closed paths to CSV
-# MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
+# Export waypoints and closed paths to CSV
+MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
