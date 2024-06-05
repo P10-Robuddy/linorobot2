@@ -286,9 +286,11 @@ class MapProcessing:
                 for path_index, path in enumerate(closed_paths):
                     # Write waypoints for each path
                     for waypoint_index in path:
-                        # Convert pixel coordinates to meters
-                        shifted_waypoint = waypoints[waypoint_index] * resolution + origin
-                        writer.writerow([waypoint_index, shifted_waypoint[0], shifted_waypoint[1], path_index])
+                        # Convert image coordinates
+                        image_coordinate = np.array(waypoints[waypoint_index])
+                        x = image_coordinate[0] * resolution + origin[0]
+                        y = image_coordinate[1] * resolution + origin[1]
+                        writer.writerow([waypoint_index, x, y, path_index])
 
         except IOError as e:
             print(f"Error writing to file {filename}: {e}")
@@ -435,9 +437,7 @@ class MapVisualization:
         # Save the image with the filled polygons
         cv2.imwrite('walls.png', image_with_walls)
 
-# If environment variable robuddy_dev is set to true, run the following code
-if os.getenv('robuddy_dev') == 'true':
-
+def simulationMain():
     # Load the PGM file
     mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
 
@@ -498,3 +498,7 @@ if os.getenv('robuddy_dev') == 'true':
 
     # Export waypoints and closed paths to CSV
     MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
+
+# If environment variable robuddy_dev is set to true, run the following code
+if os.getenv('robuddy_dev') == 'true':
+    simulationMain()
