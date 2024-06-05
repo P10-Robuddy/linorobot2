@@ -151,7 +151,7 @@ controller_server:
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 20
-      sim_time: 1.7
+      #sim_time: 1.7
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2
@@ -178,8 +178,8 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 5.0
+      update_frequency: 2.0
+      publish_frequency: 2.0
       global_frame: odom
       robot_base_frame: base_footprint
       use_sim_time: False
@@ -262,7 +262,7 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 5.0
+      update_frequency: 2.0
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
@@ -390,4 +390,4 @@ waypoint_follower:
     wait_at_waypoint:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: True
-      waypoint_pause_duration: 200
+      waypoint_pause_duration: 10

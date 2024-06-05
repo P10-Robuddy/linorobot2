@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool
 import scripts.goal_pose_provider as goal_provider
+import subprocess
 
 class patrolling_publisher(Node):
     def __init__(self):
@@ -11,7 +12,8 @@ class patrolling_publisher(Node):
 
     def callback_patrolling_publisher(self, msg):
         self.get_logger().info("Message date is: " + str(msg.data))
-        gp = goal_provider.goal_provider
+        gp = goal_provider.goal_provider()
+        subprocess.Popen(['ros2', 'launch','robuddy_coordinator', 'waypoint_publisher.launch.py'])
         if msg.data:
             self.get_logger().info("Starting Patrolling waypoints")
             gp.main()

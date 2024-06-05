@@ -19,7 +19,8 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/coordinator.launch.py']),
-        ('share/' + package_name + '/launch',['launch/slam_manager.launch.py'])
+        ('share/' + package_name + '/launch',['launch/slam_manager.launch.py']),
+        ('share/' + package_name + '/launch',['launch/waypoint_publisher.launch.py'])
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -34,7 +35,8 @@ setup(
             'robuddy_coordinator = robuddy_coordinator.robuddy_coordinator:main',
             'map_polygonization = robuddy_coordinator.map_polygonization:main',
             'patrolling_publisher = robuddy_coordinator.patrolling_publisher:main',
-            'slam_node_manager = robuddy_coordinator.slam_node_manager:main'
+            'slam_node_manager = robuddy_coordinator.slam_node_manager:main',
+            'waypoint_publisher = robuddy_coordinator.waypoint_publisher:main'
         ],
     },
 )

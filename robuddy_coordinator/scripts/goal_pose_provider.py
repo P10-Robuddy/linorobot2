@@ -24,7 +24,7 @@ from scripts.robot_navigator import BasicNavigator, NavigationResult # Helper Mo
 import csv
 import numpy as np
 class goal_provider:
-    def main():
+    def main(self):
         
         # Start the ROS 2 Python Client Library
         #rclpy.init()
@@ -33,17 +33,17 @@ class goal_provider:
         navigator = BasicNavigator()
         
         # Set the robot's initial pose if necessary
-        # initial_pose = PoseStamped()
-        # initial_pose.header.frame_id = 'map'
-        # initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-        # initial_pose.pose.position.x = 0.0
-        # initial_pose.pose.position.y = 0.0
-        # initial_pose.pose.position.z = 0.0
-        # initial_pose.pose.orientation.x = 0.0
-        # initial_pose.pose.orientation.y = 0.0
-        # initial_pose.pose.orientation.z = 0.0
-        # initial_pose.pose.orientation.w = 1.0
-        # navigator.setInitialPose(initial_pose)
+        initial_pose = PoseStamped()
+        initial_pose.header.frame_id = 'map'
+        initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+        initial_pose.pose.position.x = 0.0
+        initial_pose.pose.position.y = 0.0
+        initial_pose.pose.position.z = 0.0
+        initial_pose.pose.orientation.x = 0.0
+        initial_pose.pose.orientation.y = 0.0
+        initial_pose.pose.orientation.z = 0.0
+        initial_pose.pose.orientation.w = 1.0
+        navigator.setInitialPose(initial_pose)
         
         # Activate navigation, if not autostarted. This should be called after setInitialPose()
         # or this will initialize at the origin of the map and update the costmap with bogus readings.
@@ -68,6 +68,7 @@ class goal_provider:
 
         next(file, None)
         goal_poses = []
+        goal_poses.append(deepcopy(initial_pose))
         goal_pose = PoseStamped()
         goal_pose.header.frame_id = 'map'
         goal_pose.header.stamp = navigator.get_clock().now().to_msg()
@@ -78,44 +79,70 @@ class goal_provider:
                 goal_pose.pose.position.y = float(pt[2])
                 goal_poses.append(deepcopy(goal_pose))
 
+
+        # Initialize idleness dictionary to store lists of time deltas
+        idleness_dict = {i: [] for i in range(len(goal_poses))}
+        last_visited_dict = {i: None for i in range(len(goal_poses))}
+
+        numCycles = 3 # Number of cycles to get idleness values
         #nav_start = navigator.get_clock().now()
-        start_time = datetime.now()
-        navigator.followWaypoints(goal_poses)
-        # start a timer here to get patrolling time for statistics
-                
+        for cycle in range(numCycles):
+            print(f"Starting rotation {cycle + 1}")
+            # start a timer here to get patrolling time for statistics
+            start_time = datetime.now()
+            navigator.followWaypoints(goal_poses)
 
-        # Test print the rows to see list of waypoins.
-        #print(goal_poses)
-        
-        
-        # Do something during our route (e.x. AI to analyze stock information or upload to the cloud)
-            # Simply the current waypoint ID for the demonstation
-        i = 0
-        while not navigator.isNavComplete():
-            i = i + 1
-            feedback = navigator.getFeedback()
-            if feedback and i % 5 == 0:
-                print('Executing current waypoint: ' +
-                        str(feedback.current_waypoint + 1) + '/' + str(len(goal_poses)))
+            previous_waypoint = -1
 
-        result = navigator.getResult()
-        if result == NavigationResult.SUCCEEDED:
-            print('Inspection of waypoints done! Returning to start...')
+            while not navigator.isNavComplete():
+                feedback = navigator.getFeedback()
+                if feedback:
+                    current_waypoint = feedback.current_waypoint
+                    now = datetime.now()
+                    if current_waypoint != previous_waypoint:   
+                        # Calculate and store idleness
+                        if last_visited_dict[current_waypoint] is not None:
+                            idleness = (now - last_visited_dict[current_waypoint]).total_seconds()
+                            idleness_dict[current_waypoint].append(idleness)
+                            print(f"Just saved idleness: {idleness}, for waypoint {current_waypoint}")
+                            last_visited_dict[current_waypoint] = now
+                            previous_waypoint = current_waypoint
+       
+                    print(f'Executing current waypoint: {current_waypoint + 1}/{len(goal_poses)} in cycle {cycle} of {numCycles}')
+
+
+            result = navigator.getResult()
+            if result == NavigationResult.SUCCEEDED:
+                print('Inspection of waypoints done! Returning to start...')
+            elif result == NavigationResult.CANCELED:
+                print('Inspection of waypoints canceled. Returning to start...')
+                break
+            elif result == NavigationResult.FAILED:
+                print('Inspection of waypoints failed! Returning to start...')
+                break
+
+
+            initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+            navigator.goToPose(initial_pose)
+            while not navigator.isNavComplete():
+                pass
+
             end_time = datetime.now()
-            timeDelta = end_time-start_time
-            minutes, seconds = divmod((end_time-start_time).total_seconds(), 60)
-            print(str(minutes) + "minutes" + str(seconds) + "second(s)")
-            # Stop timer to get full patrolling time
-        elif result == NavigationResult.CANCELED:
-            print('Inspection all waypoints canceled. Returning to start...')
-            exit(1)
-        elif result == NavigationResult.FAILED:
-            print('Inspection of waypoints failed! Returning to start...')
+            minutes, seconds = divmod((end_time - start_time).total_seconds(), 60)
+            print(f"Rotation {cycle + 1} completed in {int(minutes)} minutes and {int(seconds)} seconds")
 
-        # go back to start
-        initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-        navigator.goToPose(initial_pose)
-        while not navigator.isNavComplete():
-            pass
+        print("All rotations completed. Shutting down...")
+        rclpy.shutdown()
 
-        exit(0)
+        # Save the idleness dictionary to a CSV file
+        self.save_idleness_to_csv(idleness_dict, 'idleness.csv')
+
+
+    def save_idleness_to_csv(self, idleness_dict, filename):
+        with open('/home/polybotdesktop/linorobot2_ws/src/linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files' + filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write the header
+            writer.writerow(['Waypoint', 'Idleness_Values'])
+            # Write the data
+            for waypoint, idleness_list in idleness_dict.items():
+                writer.writerow([waypoint] + idleness_list)

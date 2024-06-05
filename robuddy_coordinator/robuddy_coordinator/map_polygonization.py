@@ -18,6 +18,7 @@ class map_polygonization(Node):
     def callback_polygonization(self, msg):
         self.get_logger().info('Message recieved!: "%s"' % msg.data)
         mp = poly.MapProcessing()
+        mv = poly.MapVisualization()
         
 
         map_path = msg.data + ".pgm"
@@ -51,8 +52,14 @@ class map_polygonization(Node):
         # Load the YAML file
         yaml_data = mp.readYaml(yaml_path)
 
+        # Remove duplicates from closed paths
+        closed_paths = [list(dict.fromkeys(path)) for path in closed_paths]
+        print("Closed paths after removing duplicates:", closed_paths)
+
         # Export waypoints and closed paths to CSV
         mp.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename=export_path)
+        
+        mv.visualizeClosedPathsOnMap(mapImage,G, closed_paths)
         
         msg = Bool()
         msg.data = True
