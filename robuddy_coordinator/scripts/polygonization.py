@@ -262,12 +262,12 @@ class MapProcessing:
             data = yaml.safe_load(file)
         return data
 
-    def exportWaypointsToCSV(self, waypoints, closed_paths, image_shape, yaml_data, filename='waypoints.csv'):
+    def exportWaypointsToCSV(self, G, closed_paths, image_shape, yaml_data, filename='waypoints.csv'):
         """
         This function exports the waypoints and closed paths to a CSV file, with coordinates adjusted based on the YAML file.
 
         Parameters:
-        - waypoints: Centroids of the triangles.
+        - G: Graph with waypoints as nodes and valid paths as edges.
         - closed_paths: List of closed paths (each path is a list of waypoint indices).
         - image_shape: Shape of the image (height, width).
         - yaml_data: Metadata from the YAML file.
@@ -287,7 +287,7 @@ class MapProcessing:
                     # Write waypoints for each path
                     for waypoint_index in path:
                         # Convert image coordinates
-                        image_coordinate = np.array(waypoints[waypoint_index])
+                        image_coordinate = np.array(G.nodes[waypoint_index]['pos'])
                         x = image_coordinate[0] * resolution + origin[0]
                         y = image_coordinate[1] * resolution + origin[1]
                         writer.writerow([waypoint_index, x, y, path_index])
@@ -439,7 +439,7 @@ class MapVisualization:
 
 def simulationMain():
     # Load the PGM file
-    mapImage = cv2.imread('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm', cv2.IMREAD_GRAYSCALE)
+    mapImage = cv2.imread('linorobot2_gazebo/worlds/test/generated_map.pgm', cv2.IMREAD_GRAYSCALE)
 
     # Polygonize the image
     MP = MapProcessing()
@@ -490,14 +490,14 @@ def simulationMain():
     MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
     # Load the YAML file
-    yaml_data = MP.readYaml('linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4.yaml')
+    yaml_data = MP.readYaml('linorobot2_gazebo/worlds/test/generated_map.yaml')
 
     # Remove duplicates from closed paths
     closed_paths = [list(dict.fromkeys(path)) for path in closed_paths]
     print("Closed paths after removing duplicates:", closed_paths)
 
     # Export waypoints and closed paths to CSV
-    MP.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
+    MP.exportWaypointsToCSV(G, closed_paths, mapImage.shape, yaml_data, filename='waypoints.csv')
 
 # If environment variable robuddy_dev is set to true, run the following code
 if os.getenv('robuddy_dev') == 'true':
