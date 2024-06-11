@@ -504,4 +504,4 @@ def simulationMain(visualize):
 
 # If environment variable robuddy_dev is set to true, run the following code
 if os.getenv('robuddy_dev') == 'true':
-    simulationMain(False)
+    simulationMain(visualize=False)
