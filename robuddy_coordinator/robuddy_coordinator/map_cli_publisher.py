@@ -6,28 +6,31 @@ from std_msgs.msg import String
 import sys
 
 class MapCliPublisher(Node):
-    def __init__(self, message):
-        super().__init__('map_cli_publisher')
+    def __init__(self):
+        super().__init__('string_publisher')
         self.publisher_ = self.create_publisher(String, 'map_polygonization', 10)
-        self.publish_message(message)
+        timer_period = 0.5  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.get_logger().info('Publisher node started')
 
-    def publish_message(self, message):
-        msg = String()
-        msg.data = message
-        self.publisher_.publish(msg)
-        self.get_logger().info(f'Publishing: "{msg.data}"')
+    def timer_callback(self):
+        if len(sys.argv) > 1:
+            msg = String()
+            msg.data = ' '.join(sys.argv[1:])
+            self.publisher_.publish(msg)
+            self.get_logger().info(f'Publishing: "{msg.data}"')
+        else:
+            self.get_logger().warn('Waiting for map string to be sent')
 
 def main(args=None):
     rclpy.init(args=args)
+    node = MapCliPublisher()
 
-    if len(sys.argv) > 1:
-        message = ' '.join(sys.argv[1:])
-        node = MapCliPublisher(message)
-    else:
-        print("No string provided in CLI arguments.")
-        return
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
 
-    rclpy.spin_once(node)
     node.destroy_node()
     rclpy.shutdown()
 
