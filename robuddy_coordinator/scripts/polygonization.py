@@ -374,7 +374,7 @@ class MapVisualization:
         # Optionally show the figure
         plt.show()
 
-    def visualizeClosedPathsOnMap(self, mapImage, Graph, closed_paths):
+    def visualizeClosedPathsOnMap(self, mapImage, Graph, closed_paths, saveDir):
         """
         Visualizes the closed paths on the map image.
 
@@ -402,12 +402,12 @@ class MapVisualization:
                 cv2.circle(map_with_paths, p1, 5, (0, 0, 255), -1)
 
         # Display the image with closed paths
-        cv2.imshow('Closed Paths on Map', map_with_paths)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow('Closed Paths on Map', map_with_paths)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         # Save the image with closed paths
-        cv2.imwrite('closed_paths_on_map.png', map_with_paths)
+        cv2.imwrite(os.path.join(saveDir, 'closed_paths_on_map.png'), map_with_paths)
 
     def visualizeWalls(self, image, polygons):
         """
@@ -439,7 +439,7 @@ class MapVisualization:
 
 def simulationMain():
     # Load the PGM file
-    mapImage = cv2.imread('linorobot2_gazebo/worlds/test/generated_map.pgm', cv2.IMREAD_GRAYSCALE)
+    mapImage = cv2.imread('linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files/11-19-26-09/generated_map.pgm', cv2.IMREAD_GRAYSCALE)
 
     # Polygonize the image
     MP = MapProcessing()
@@ -459,8 +459,8 @@ def simulationMain():
         print("Waypoint", index, ":", waypoint)
 
     # Visualize the triangles with waypoints and coordinates
-    MV = MapVisualization()
-    MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
+    # MV = MapVisualization()
+    # MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 
     # Create the waypoint graph
     G = MP.createWaypointGraph(waypoints, polygons)
@@ -470,13 +470,13 @@ def simulationMain():
     print("Isolated vertices:", isolated_vertices)
 
     # Visualize the waypoint graph
-    MV.visualizeWaypointGraph(mapImage, G)
+    # MV.visualizeWaypointGraph(mapImage, G)
 
     # Visualize the walls
-    MV.visualizeWalls(mapImage, polygons)
+    # MV.visualizeWalls(mapImage, polygons)
 
     # Partition the graph into n sections and create closed paths within those partitions
-    num_partitions = 1
+    num_partitions = 3
     partitions = MP.partitionGraph(G, num_partitions)
 
     # Create closed paths for each subgraph
@@ -487,10 +487,10 @@ def simulationMain():
         print(f"Closed Path for Subgraph {i+1}: {path}")
 
     # Visualize the closed paths on the map image
-    MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
+    # MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
     # Load the YAML file
-    yaml_data = MP.readYaml('linorobot2_gazebo/worlds/test/generated_map.yaml')
+    yaml_data = MP.readYaml('linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files/11-19-26-09/generated_map.yaml')
 
     # Remove duplicates from closed paths
     closed_paths = [list(dict.fromkeys(path)) for path in closed_paths]
@@ -502,3 +502,4 @@ def simulationMain():
 # If environment variable robuddy_dev is set to true, run the following code
 if os.getenv('robuddy_dev') == 'true':
     simulationMain()
+

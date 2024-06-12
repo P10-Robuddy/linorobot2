@@ -20,7 +20,10 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/coordinator.launch.py']),
         ('share/' + package_name + '/launch',['launch/slam_manager.launch.py']),
-        ('share/' + package_name + '/launch',['launch/waypoint_publisher.launch.py'])
+        ('share/' + package_name + '/launch',['launch/waypoint_publisher.launch.py']),
+        ('share/' + package_name + '/launch',['launch/experiments_control.launch.py']),
+        ('share/' + package_name + '/launch' , ['launch/experiments_manager.launch.py']),
+        ('share/' + package_name + '/launch' , ['launch/map_cli_publisher.launch.py'])
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -36,7 +39,9 @@ setup(
             'map_polygonization = robuddy_coordinator.map_polygonization:main',
             'patrolling_publisher = robuddy_coordinator.patrolling_publisher:main',
             'slam_node_manager = robuddy_coordinator.slam_node_manager:main',
-            'waypoint_publisher = robuddy_coordinator.waypoint_publisher:main'
+            'waypoint_publisher = robuddy_coordinator.waypoint_publisher:main',
+            'automatic_test_suite = robuddy_coordinator.automatic_test_suite:main',
+            'map_cli_publisher = robuddy_coordinator.map_cli_publisher:main'
         ],
     },
 )

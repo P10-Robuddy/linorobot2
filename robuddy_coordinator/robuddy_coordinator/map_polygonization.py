@@ -6,11 +6,15 @@ import os
 import sys
 import cv2
 import scripts.polygonization as poly
+import pathlib
 
 class map_polygonization(Node):
+    num_partitions = 1 # set default to be 1 
     def __init__(self):
         super().__init__('map_polygonization') #gives the node its name
         self.get_logger().info('Map Polygonization Node has been started.')
+        self.declare_parameter('partitions', 1)
+        map_polygonization.num_partitions = self.get_parameter('partitions').get_parameter_value().integer_value
         self.subscriber = self.create_subscription(String, "map_polygonization", self.callback_polygonization ,10)
         self.publisher = self.create_publisher(Bool, 'patrolling_publisher', 10)
         self.slamPub = self.create_publisher(Bool, "stop_node", 10)
@@ -25,7 +29,7 @@ class map_polygonization(Node):
         print("map path: " + map_path)
         yaml_path = os.path.splitext(msg.data)[0] + ".yaml"
         print("yaml path: " + yaml_path)
-        export_path = '/home/polybotdesktop/linorobot2_ws/src/linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files/waypoints.csv'
+        export_path = os.path.join(os.path.dirname(msg.data), 'waypoints.csv')
 
         # Load the PGM file
         mapImage = cv2.imread(map_path, cv2.IMREAD_GRAYSCALE)
@@ -43,8 +47,7 @@ class map_polygonization(Node):
         G = mp.createWaypointGraph(waypoints, polygons)
 
         # Partition graph
-        num_partitions = 1
-        partitions = mp.partitionGraph(G, num_partitions)
+        partitions = mp.partitionGraph(G, map_polygonization.num_partitions)
 
         # Create closed paths for each subgraph
         closed_paths = mp.createClosedPaths(partitions)
@@ -57,9 +60,9 @@ class map_polygonization(Node):
         print("Closed paths after removing duplicates:", closed_paths)
 
         # Export waypoints and closed paths to CSV
-        mp.exportWaypointsToCSV(waypoints, closed_paths, mapImage.shape, yaml_data, filename=export_path)
+        mp.exportWaypointsToCSV(G, closed_paths, mapImage.shape, yaml_data, filename=export_path)
         
-        mv.visualizeClosedPathsOnMap(mapImage,G, closed_paths)
+        mv.visualizeClosedPathsOnMap(mapImage,G, closed_paths, os.path.dirname(msg.data))
         
         msg = Bool()
         msg.data = True
