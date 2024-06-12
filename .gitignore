@@ -15,3 +15,6 @@ linorobot2_gazebo/worlds/*
 
 robuddy_coordinator/robuddy_coordinator/generated_files/*
 linorobot2_navigation/maps/generated_maps/*
+!robuddy_coordinator/robuddy_coordinator/experiments/**/**/*.csv
+!robuddy_coordinator/robuddy_coordinator/experiments/**/**/closed_paths_on_map.png
+
