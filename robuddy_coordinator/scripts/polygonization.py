@@ -437,7 +437,7 @@ class MapVisualization:
         # Save the image with the filled polygons
         cv2.imwrite('walls.png', image_with_walls)
 
-def simulationMain():
+def simulationMain(visualize):
     # Load the PGM file
     mapImage = cv2.imread('linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files/11-19-26-09/generated_map.pgm', cv2.IMREAD_GRAYSCALE)
 
@@ -458,9 +458,10 @@ def simulationMain():
     for index, waypoint in enumerate(waypoints):
         print("Waypoint", index, ":", waypoint)
 
-    # Visualize the triangles with waypoints and coordinates
-    # MV = MapVisualization()
-    # MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
+    if (visualize):
+        # Visualize the triangles with waypoints and coordinates
+        MV = MapVisualization()
+        MV.visualizeTriangles(mapImage, triangles, all_points, waypoints)
 
     # Create the waypoint graph
     G = MP.createWaypointGraph(waypoints, polygons)
@@ -469,11 +470,12 @@ def simulationMain():
     isolated_vertices = [node for node, degree in G.degree if degree == 0]
     print("Isolated vertices:", isolated_vertices)
 
-    # Visualize the waypoint graph
-    # MV.visualizeWaypointGraph(mapImage, G)
+    if (visualize):
+        # Visualize the waypoint graph
+        MV.visualizeWaypointGraph(mapImage, G)
 
-    # Visualize the walls
-    # MV.visualizeWalls(mapImage, polygons)
+        # Visualize the walls
+        MV.visualizeWalls(mapImage, polygons)
 
     # Partition the graph into n sections and create closed paths within those partitions
     num_partitions = 3
@@ -486,8 +488,9 @@ def simulationMain():
     for i, path in enumerate(closed_paths):
         print(f"Closed Path for Subgraph {i+1}: {path}")
 
-    # Visualize the closed paths on the map image
-    # MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
+    if (visualize):
+        # Visualize the closed paths on the map image
+        MV.visualizeClosedPathsOnMap(mapImage, G, closed_paths)
 
     # Load the YAML file
     yaml_data = MP.readYaml('linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files/11-19-26-09/generated_map.yaml')
@@ -501,5 +504,4 @@ def simulationMain():
 
 # If environment variable robuddy_dev is set to true, run the following code
 if os.getenv('robuddy_dev') == 'true':
-    simulationMain()
-
+    simulationMain(visualize=False)
