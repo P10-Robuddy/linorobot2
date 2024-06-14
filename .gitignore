@@ -18,3 +18,4 @@ linorobot2_navigation/maps/generated_maps/*
 !robuddy_coordinator/robuddy_coordinator/experiments/**/**/*.csv
 !robuddy_coordinator/robuddy_coordinator/experiments/**/**/closed_paths_on_map.png
 
+*.DS_Store
