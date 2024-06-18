@@ -2,3 +2,20 @@ log
 build
 install
 *.json
+closed_paths_on_map.png
+triangles_with_waypoints.png
+waypoint_graph.png
+walls.png
+waypoints.csv
+linorobot2/robuddy_coordinator/robuddy_coordinator/generated_files/*
+linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 bad.pgm
+linorobot2_gazebo/worlds/experiment_rooms/worlds/room4/map/room4 good.pgm
+linorobot2_gazebo/worlds/*
+*.csv
+
+robuddy_coordinator/robuddy_coordinator/generated_files/*
+linorobot2_navigation/maps/generated_maps/*
+!robuddy_coordinator/robuddy_coordinator/experiments/**/**/*.csv
+!robuddy_coordinator/robuddy_coordinator/experiments/**/**/closed_paths_on_map.png
+
+*.DS_Store
